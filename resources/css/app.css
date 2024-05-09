@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+
+@import url('assets/css/style.css');
+@import url('https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css');
+@import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css');
+@import url('https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css');
+@import url('{{ asset('assets/css/style.css') }}');
+@import url('{{ asset('fonts/tabler-icons.min.css') }}');
+@import url('{{ asset('fonts/feather.css') }}');
+@import url('{{ asset('fonts/fontawesome.css') }}');
+@import url('{{ asset('fonts/material.css') }}');
+@import url('{{ asset('css/customizer.css') }}');
+@import url('{{ asset('css/custom.css') }}');
+@import url('{{ asset('css/plugins/bootstrap-switch-button.min.css') }}');
+
+
+
+th.fixed-column {
+    position: sticky !important;
+    left: 0;
+    z-index: 10;
+}
+td.fixed-column {
+    position: sticky;
+    left: 0;
+    z-index: 0;
+    background-color: white;
+}
+th.fixed-second-column {
+    position: sticky !important;
+    left: 100px; 
+    z-index: 10;
+}
+td.fixed-second-column {
+    position: sticky;
+    left: 100px;
+    z-index: 0;
+    background-color: white;
+}
+.bg-input-color{
+    background-color: #ffffff !important;
+    color: #293240 !important;
+}
+.edit--state-select{
+    width: auto !important;
+}
