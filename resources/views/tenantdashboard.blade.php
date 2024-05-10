@@ -1,10 +1,10 @@
 @extends('layouts.main')
-@section('title', __('Dashboard'))
+@section('title', __('Dashboard | Preciseca'))
 @section('content')
     <div class="row">
         <div class="col-xxl-7">
             <div class="row">
-               
+                
                     <div class="col-lg-3 col-6">
                         <div class="card">
                             <div class="card-body">

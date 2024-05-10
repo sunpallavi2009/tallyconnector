@@ -7,6 +7,7 @@ use Laravel\Jetstream\Jetstream;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TenantHomeController;
+use App\Http\Controllers\App\ExcelImportController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use Laravel\Jetstream\Http\Controllers\CurrentTeamController;
@@ -57,12 +58,23 @@ Route::middleware([
         'verified'
     ]
     )->group(function () {
-        // Route::get('/dashboard', function () {
-        //     return view('dashboard');
-        // })
-        // ->name('dashboard');
 
         Route::get('/dashboard', [TenantHomeController::class, 'index'])->name('dashboard');
+
+        
+        
+        //excelImport
+        Route::resource('excelImport', ExcelImportController::class);
+        //excelImport ledgers
+        Route::get('excelImport/ledgers/create', [ExcelImportController::class, 'ledgerCreate'])->name('excelImport.ledgers.create');
+        Route::post('excelImport/ledgers/import', [ExcelImportController::class,'ledgerImport'])->name('excelImport.ledgers.import');
+        Route::get('excelImport/ledgers/show', [ExcelImportController::class,'ledgerShow'])->name('excelImport.ledgers.show');
+        Route::delete('excelImport/ledgers/destroy/{id}', [ExcelImportController::class,'ledgerDestroy'])->name('excelImport.ledgers.destroy');
+        Route::post('excelImport/ledgers/{id}', [ExcelImportController::class, 'ledgerInputStore'])->name('ledgers.input.store');
+
+
+
+
 
         //  JET STREAM
         require __DIR__ . '/jetstream.php';

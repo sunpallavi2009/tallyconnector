@@ -1,5 +1,5 @@
 @extends('layouts.main')
-@section('title', __('Create Tenant'))
+@section('title', __('Create Tenant | Preciseca'))
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
     <li class="breadcrumb-item"><a href="{{ route('tenants.index') }}">{{ __('Tenants') }}</a></li>

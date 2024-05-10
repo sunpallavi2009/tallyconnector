@@ -81,6 +81,10 @@ File: style.css
     margin-left: 2px;
 }
 
+.ml-8 {
+    margin-left: 8px;
+}
+
 .cust-margin {
     margin-top: 30%;
 }

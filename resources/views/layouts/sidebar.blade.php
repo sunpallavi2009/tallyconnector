@@ -1,21 +1,9 @@
-{{-- @php
-    $users = \Auth::user();
-    $currantLang = $users->currentLanguage();
-    // $languages = Utility::languages();
-@endphp --}}
 <nav class="dash-sidebar light-sidebar">
-{{-- <nav class="dash-sidebar light-sidebar {{ Utility::getsettings('transparent_layout') == 1 ? 'transprent-bg' : '' }}"> --}}
     <div class="navbar-wrapper">
         <div class="m-headers logo-col">
             <a href="{{ route('dashboard') }}" class="b-brand">
                 <!-- ========   change your logo hear   ============ -->
-                {{-- @if ($users->dark_layout == 1) --}}
-                    <img src="{{ asset('assets/images/logo/app-dark-logo.png') }}"
-                        class="footer-light-logo">
-                {{-- @else
-                    <img src="{{ Utility::getsettings('app_dark_logo') ? Utility::getpath('logo/app-dark-logo.png') : asset('assets/images/logo/app-dark-logo.png') }}"
-                        class="footer-dark-logo">
-                @endif --}}
+                    <img class="footer-light-logo">
             </a>
         </div>
         <div class="navbar-content">
@@ -26,15 +14,17 @@
                         <span class="dash-mtext">{{ __('Dashboard') }}</span>
                     </a>
                 </li>
-               
-                        {{-- <li class="dash-item dash-hasmenu {{ request()->is('excelImport*') ? 'active' : '' }}">
-                            <a class="dash-link" href="{{ route('excelImport.index') }}"><span class="dash-micon">
-                                    <i class="fas fa-file-excel"></i></span>
-                                <span class="dash-mtext">{{ __('Excel Import') }}</span>
-                            </a>
-                        </li>
+                      
+                            <li class="dash-item dash-hasmenu {{ request()->is('excelImport*') ? 'active' : '' }}">
+                                <a class="dash-link" href="{{ route('excelImport.index') }}"><span class="dash-micon">
+                                        <i class="fas fa-file-excel"></i></span>
+                                    <span class="dash-mtext">{{ __('Excel Import') }}</span>
+                                </a>
+                            </li>
+                     
+                    
 
-                        <li class="dash-item dash-hasmenu {{ request()->is('sales*') ? 'active' : '' }}">
+                        {{-- <li class="dash-item dash-hasmenu {{ request()->is('sales*') ? 'active' : '' }}">
                             <a class="dash-link" href="{{ route('sales.index') }}"><span class="dash-micon">
                                     <i class="ti ti-file-invoice"></i></span>
                                 <span class="dash-mtext">{{ __('Sales') }}</span>
@@ -55,7 +45,7 @@
                                 <span class="dash-mtext">{{ __('Ecommerce') }}</span>
                             </a>
                         </li> --}}
-
+                     
                         <li class="dash-item dash-hasmenu {{ request()->is('#*') ? 'active' : '' }}">
                             <a class="dash-link" href=""><span class="dash-micon">
                                     <i class="fas fa-file-excel"></i></span>

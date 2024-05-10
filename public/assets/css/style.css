@@ -393,7 +393,8 @@ button,
 [type="button"],
 [type="reset"],
 [type="submit"] {
-    -webkit-appearance: button;
+    -webkit-appearance: button; 
+     background-color: #584ED2 !important;
 }
 
 button:not(:disabled),
@@ -15959,21 +15960,21 @@ body.theme-2 .dash-header .drp-company .theme-avtar {
     color: #584ED2;
 }
 
-body.theme-2 .dash-sidebar.light-sidebar .dash-navbar > .dash-item.active > .dash-link, body.theme-2 .dash-sidebar.light-sidebar .dash-navbar > .dash-item:active > .dash-link, body.theme-2 .dash-sidebar.light-sidebar .dash-navbar > .dash-item:focus > .dash-link, body.theme-2 .dash-sidebar.light-sidebar .dash-navbar > .dash-item:hover > .dash-link,
-body.theme-2 .dash-sidebar .dash-navbar > .dash-item.active > .dash-link,
-body.theme-2 .dash-sidebar .dash-navbar > .dash-item:active > .dash-link,
-body.theme-2 .dash-sidebar .dash-navbar > .dash-item:focus > .dash-link,
-body.theme-2 .dash-sidebar .dash-navbar > .dash-item:hover > .dash-link {
+body .dash-sidebar.light-sidebar .dash-navbar > .dash-item.active > .dash-link, body.theme-2 .dash-sidebar.light-sidebar .dash-navbar > .dash-item:active > .dash-link, body.theme-2 .dash-sidebar.light-sidebar .dash-navbar > .dash-item:focus > .dash-link, body.theme-2 .dash-sidebar.light-sidebar .dash-navbar > .dash-item:hover > .dash-link,
+body .dash-sidebar .dash-navbar > .dash-item.active > .dash-link,
+body .dash-sidebar .dash-navbar > .dash-item:active > .dash-link,
+body .dash-sidebar .dash-navbar > .dash-item:focus > .dash-link,
+body .dash-sidebar .dash-navbar > .dash-item:hover > .dash-link {
     background: linear-gradient(141.55deg, #584ED2 3.46%, #584ED2 99.86%), #584ED2;
     color: #fff;
     box-shadow: 0 5px 7px -1px rgba(88, 78, 210, 0.3);
 }
 
 .dash-sidebar.light-sidebar .dash-navbar > .dash-item.active > .dash-link i, body.theme-2 .dash-sidebar.light-sidebar .dash-navbar > .dash-item:active > .dash-link i, body.theme-2 .dash-sidebar.light-sidebar .dash-navbar > .dash-item:focus > .dash-link i, body.theme-2 .dash-sidebar.light-sidebar .dash-navbar > .dash-item:hover > .dash-link i,
-body.theme-2 .dash-sidebar .dash-navbar > .dash-item.active > .dash-link i,
-body.theme-2 .dash-sidebar .dash-navbar > .dash-item:active > .dash-link i,
-body.theme-2 .dash-sidebar .dash-navbar > .dash-item:focus > .dash-link i,
-body.theme-2 .dash-sidebar .dash-navbar > .dash-item:hover > .dash-link i {
+body .dash-sidebar .dash-navbar > .dash-item.active > .dash-link i,
+body .dash-sidebar .dash-navbar > .dash-item:active > .dash-link i,
+body .dash-sidebar .dash-navbar > .dash-item:focus > .dash-link i,
+body .dash-sidebar .dash-navbar > .dash-item:hover > .dash-link i {
     color: #584ED2;
 }
 
@@ -18050,9 +18051,9 @@ body.theme-10 .card .card-header h5:after, body.theme-10 .card .card-header .h5:
     }
 
     .dash-sidebar.light-sidebar:not(.transprent-bg) {
-        top: 20px;
+        /* top: 20px; */
         bottom: 20px;
-        left: 20px;
+        /* left: 20px; */
         border-radius: 20px;
         box-shadow: -2.61824px 26px 49px rgba(182, 186, 203, 0.3);
     }
