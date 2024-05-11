@@ -2,8 +2,9 @@
 
 namespace App\DataTables\App;
 
-use App\Facades\UtilityFacades;
+use Carbon\Carbon;
 use App\Models\Item;
+use App\Facades\UtilityFacades;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 
@@ -15,7 +16,7 @@ class ItemDataTable extends DataTable
             ->eloquent($query)
             ->addIndexColumn()
             ->editColumn('created_at', function ($request) {
-                return UtilityFacades::date_time_format($request->created_at);
+                return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
             });
     }
 
@@ -53,19 +54,6 @@ class ItemDataTable extends DataTable
                              <'dataTable-bottom row'<'col-sm-5'i><'col-sm-7'p>>
                                ",
                 'buttons'   => [
-//                    ['extend' => 'create', 'className' => 'btn btn-light-primary no-corner me-1 add_module', 'action' => " function ( e, dt, node, config ) {
-//                        window.location = '" . route('faqs.create') . "';
-//                   }"],
-//                    [
-//                        'extend' => 'collection', 'className' => 'btn btn-light-secondary me-1 dropdown-toggle', 'text' => '<i class="ti ti-download"></i> Export', "buttons" => [
-//                        ["extend" => "print", "text" => '<i class="fas fa-print"></i> Print', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                        ["extend" => "csv", "text" => '<i class="fas fa-file-csv"></i> CSV', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                        ["extend" => "excel", "text" => '<i class="fas fa-file-excel"></i> Excel', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                        ["extend" => "pdf", "text" => '<i class="fas fa-file-pdf"></i> PDF', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                    ],
-//                    ],
-//                    ['extend' => 'reset', 'className' => 'btn btn-light-danger me-1'],
-//                    ['extend' => 'reload', 'className' => 'btn btn-light-warning'],
                 ],
                 "scrollX" => true,
                 "drawCallback" => 'function( settings ) {
@@ -88,13 +76,6 @@ class ItemDataTable extends DataTable
                 }'
             ])->language([
                 'buttons' => [
-//                    'create' => __('Create'),
-//                    'export' => __('Export'),
-//                    'print' => __('Print'),
-//                    'reset' => __('Reset'),
-//                    'reload' => __('Reload'),
-//                    'excel' => __('Excel'),
-//                    'csv' => __('CSV'),
                 ]
             ]);
     }
@@ -121,6 +102,7 @@ class ItemDataTable extends DataTable
             Column::make('rate')->title(__('Rate')),
             Column::make('amount')->title(__('Amount')),
             Column::make('gst_type_of_supply')->title(__('GST TYPE OF SUPPLY')),
+            Column::make('tags')->title(__('Tags')),
             Column::make('created_at')->title(__('Created At')),
         ];
     }

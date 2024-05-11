@@ -104,6 +104,12 @@ Route::middleware([
         //jsonImport
         Route::resource('jsonImport', JsonImportController::class);
         Route::get('jsonImport/items/show', [JsonImportController::class,'itemShow'])->name('jsonImport.items.show');
+        Route::get('jsonImport/sales/show', [JsonImportController::class,'saleShow'])->name('jsonImport.sales.show');
+        Route::get('jsonImport/purchase/show', [JsonImportController::class,'purchaseShow'])->name('jsonImport.purchase.show');
+        Route::get('jsonImport/items/show', [JsonImportController::class,'itemShow'])->name('jsonImport.bank.show');
+        Route::get('jsonImport/items/show', [JsonImportController::class,'itemShow'])->name('jsonImport.items.show');
+        Route::get('jsonImport/items/show', [JsonImportController::class,'itemShow'])->name('jsonImport.items.show');
+        Route::get('jsonImport/items/show', [JsonImportController::class,'itemShow'])->name('jsonImport.items.show');
     
 
 
