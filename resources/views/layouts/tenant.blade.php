@@ -7,7 +7,7 @@
  
     <title>@yield('title', 'Preciseca')</title>
 
-    <link rel="icon" href="{{ asset('assets/images/logo/app-favicon-logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ url('assets/images/logo/app-favicon-logo.png') }}" type="image/png">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -22,7 +22,7 @@
     </div>
 
 
-    @include('layouts.sidebar')
+    @include('layouts.tenantsidebar')
 
 
     @include('layouts.header')
@@ -90,23 +90,23 @@
     
     @include('layouts.footer')
 
-    <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/js/plugins/popper.min.js') }}"></script>
-    <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}"></script>
+    <script src="{{ url('assets/js/jquery.min.js') }}"></script>
+    <script src="{{ url('assets/js/plugins/popper.min.js') }}"></script>
+    <script src="{{ url('assets/js/plugins/perfect-scrollbar.min.js') }}"></script>
     {{-- tostr notification close --}}
-    <script src="{{ asset('assets/js/plugins/bootstrap.min.js') }}"></script>
-    <script src="{{ asset('assets/js/plugins/feather.min.js') }}"></script>
+    <script src="{{ url('assets/js/plugins/bootstrap.min.js') }}"></script>
+    <script src="{{ url('assets/js/plugins/feather.min.js') }}"></script>
     {{-- sidebar active deactive menu --}}
-    <script src="{{ asset('assets/js/dash.js') }}"></script>
+    <script src="{{ url('assets/js/dash.js') }}"></script>
     {{-- Form-validation  --}}
-    <script src="{{ asset('assets/js/plugins/bouncer.min.js') }}"></script>
-    <script src="{{ asset('assets/js/plugins/form-validation.js') }}"></script>
+    <script src="{{ url('assets/js/plugins/bouncer.min.js') }}"></script>
+    <script src="{{ url('assets/js/plugins/form-validation.js') }}"></script>
     {{-- notification , alert pop-up --}}
-    <script src="{{ asset('assets/js/plugins/sweetalert2.all.min.js') }}"></script>
-    <script src="{{ asset('vendor/notifier/bootstrap-notify.min.js') }}"></script>
+    <script src="{{ url('assets/js/plugins/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ url('vendor/notifier/bootstrap-notify.min.js') }}"></script>
     {{-- toggle button --}}
-    <script src="{{ asset('assets/js/plugins/bootstrap-switch-button.min.js') }}"></script>
-    <script src="{{ asset('assets/js/custom.js') }}"></script>
+    <script src="{{ url('assets/js/plugins/bootstrap-switch-button.min.js') }}"></script>
+    <script src="{{ url('assets/js/custom.js') }}"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
 

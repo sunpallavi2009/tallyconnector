@@ -21,12 +21,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.excel-img{
-    background-image: url('../../public/assets/images/25.png');
-    background-repeat: no-repeat;
-    background-size: contain;
-    height: 50px;
-}
 .form-label.asterisk::after {
     content: "*";
     color: red; 
@@ -58,21 +52,6 @@ ul {
     border-radius: 6px;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
-
-.user-img{
-    background-image: url('../../public/assets/images/avatar/avatar.png');
-    background-repeat: no-repeat;
-    background-size: contain;
-}
-
-.footer-light-logo{
-    background-image: url('../../public/assets/images/logo/app-dark-logo.png');
-    background-repeat: no-repeat;
-    background-size: contain;
-    /* border: 1px solid #ccc; */
-    border: none !important;
-}
-
 
 th.fixed-column {
     position: sticky !important;

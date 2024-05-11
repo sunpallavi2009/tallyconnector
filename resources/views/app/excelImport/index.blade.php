@@ -1,4 +1,4 @@
-@extends('layouts.main')
+@extends('layouts.tenant')
 @section('title', __('Excel Import | Preciseca'))
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
@@ -18,7 +18,7 @@
                 </div>
             </div>
         </div>
-        {{-- <div class="col-xl-3 col-sm-6 col-12">
+        <div class="col-xl-3 col-sm-6 col-12">
             <div class="card">
                 <div class="card-body">
                     <div class="theme-avtar bg-info">
@@ -50,10 +50,10 @@
                     <a class="text-muted text-sm mt-4 mb-2" href="{{ route('excelImport.purchase.create') }}"><h6 class="mb-3 text-info"> {{ __('Purchase Invoices') }} </h6></a>
                 </div>
             </div>
-        </div> --}}
+        </div>
     </div>
 
-    {{-- <div class="row">
+    <div class="row">
         <div class="col-xl-3 col-sm-6 col-12">
             <div class="card">
                 <div class="card-body">
@@ -98,6 +98,6 @@
                 </div>
             </div>
         </div>
-    </div> --}}
+    </div>
 
 @endsection

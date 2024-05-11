@@ -18,7 +18,7 @@
                     <a class="dash-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown"
                         href="javascript:void(0);" role="button" aria-haspopup="false" aria-expanded="false">
                         <span>
-                            <img class="rounded-circle mr-1 user-img">
+                            <img src="{{ url('assets/images/avatar/avatar.png') }}" class="rounded-circle mr-1">
                         </span>
                         <span class="hide-mob ms-2">{{ __('Hi,') }} {{ Auth::user()->name }}</span>
                         <i class="ti ti-chevron-down drp-arrow nocolor hide-mob"></i>

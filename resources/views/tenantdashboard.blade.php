@@ -1,4 +1,4 @@
-@extends('layouts.main')
+@extends('layouts.tenant')
 @section('title', __('Dashboard | Preciseca'))
 @section('content')
     <div class="row">
