@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DataTables\Admin;
+namespace App\DataTables\App;
 
 use App\Facades\UtilityFacades;
 use App\Models\Bank;
@@ -111,6 +111,7 @@ class JournalDataTable extends DataTable
             Column::make('credit_ledgers')->title(__('Credit Ledgers')),
             Column::make('debit_ledgers')->title(__('Debit Ledgers (Party Ledger)')),
             Column::make('narration')->title(__('Narration')),
+            Column::make('tags')->title(__('Tags')),
             Column::make('created_at')->title(__('Created At')),
         ];
     }

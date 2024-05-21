@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DataTables\Admin;
+namespace App\DataTables\App;
 
 use App\Facades\UtilityFacades;
 use App\Models\SalePurchaseInvoice;
@@ -127,6 +127,7 @@ class SaleDataTable extends DataTable
             Column::make('cess')->title(__('cess')),
             Column::make('discount')->title(__('discount')),
             Column::make('inv_amt')->title(__('invoice amount')),
+            Column::make('tags')->title(__('Tags')),
             Column::make('created_at')->title(__('Created At')),
         ];
     }

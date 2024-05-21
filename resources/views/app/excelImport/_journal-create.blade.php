@@ -1,4 +1,4 @@
-@extends('layouts.main')
+@extends('layouts.tenant')
 @section('title', __('Excel Import'))
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('home') }}">{{ __('Dashboard') }}</a></li>

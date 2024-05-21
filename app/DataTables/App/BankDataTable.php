@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DataTables\Admin;
+namespace App\DataTables\App;
 
 use App\Facades\UtilityFacades;
 use App\Models\Bank;
@@ -116,6 +116,7 @@ class BankDataTable extends DataTable
             Column::make('transection_type')->title(__('Transaction Type')),
             Column::make('fav_name')->title(__('Favouring Name')),
             Column::make('bank_date')->title(__('Bank Date')),
+            Column::make('tags')->title(__('Tags')),
             Column::make('created_at')->title(__('Created At')),
         ];
     }

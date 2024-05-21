@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('party_name')->nullable();
             $table->string('alias')->nullable();
             $table->string('group_name')->nullable();
-            $table->string('credit_period')->nullable();
+            $table->date('credit_period')->nullable();
             $table->string('buyer_name')->nullable();
             $table->string('address1')->nullable();
             $table->string('address2')->nullable();
@@ -28,8 +28,8 @@ return new class extends Migration
             $table->string('pincode')->nullable();
             $table->string('gst_in')->nullable();
             $table->string('gst_reg_type')->nullable();
-            $table->string('opening_balance')->nullable();
-            $table->string('applicable_date')->nullable();
+            $table->decimal('opening_balance')->nullable();
+            $table->date('applicable_date')->nullable();
             $table->string('tags')->nullable();
             $table->timestamps();
         });

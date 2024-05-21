@@ -4,22 +4,23 @@ namespace App\Http\Controllers\App;
 
 
 use Carbon\Carbon;
+use App\Models\Item;
 use App\Models\Ledger;
 use Illuminate\Http\Request;
+use App\Models\SalePurchaseInvoice;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use App\DataTables\App\BankDataTable;
+use App\DataTables\App\ItemDataTable;
+use App\DataTables\App\LedgerDataTable;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\DataTables\App\JournalDataTable;
 use App\DataTables\App\SalePurchaseDataTable;
-use App\DataTables\App\LedgerDataTable;
-use App\DataTables\App\BankDataTable;
-use App\DataTables\App\ItemDataTable;
-
 use Illuminate\Support\Facades\Storage;
 // use Illuminate\Support\Facades\Request;
 // use Illuminate\Support\Facades\Validator; 
 
 
-use App\Http\Controllers\Controller;
 
 class ExcelImportController extends Controller
 {
@@ -70,6 +71,7 @@ class ExcelImportController extends Controller
         return view('app.excelImport.index');
     }
 
+    //ledger
     public function ledgerCreate()
     {
         return view('app.excelImport._ledger-create');
@@ -80,303 +82,152 @@ class ExcelImportController extends Controller
         $subdomain = explode('.', $domain)[0];
         return $subdomain;
     }
+
     public function ledgerImport(Request $request)
     {
         $request->validate([
             'file' => 'required|file'
         ]);
-    
+
         $file = $request->file('file');
-    
+
         $spreadsheet = IOFactory::load($file);
-    
+
         $worksheet = $spreadsheet->getActiveSheet();
-    
+
         $dataArray = $worksheet->toArray(null, true, true, true);
-    
+
         $headings = array_shift($dataArray);
-    
+
         $records = [];
-    
+
         foreach ($dataArray as $row) {
             $record = array_combine($headings, $row);
             $records[] = $record;
         }
-    
+
         $json_data = json_encode($records);
-    
-        $domain = $request->getHost();
-        $tenantId = $this->getTenantIdFromDomain($domain);
-    
-        $tenantDirectory = 'app/' . $tenantId;
-    
-        if (!Storage::exists($tenantDirectory)) {
-            Storage::makeDirectory($tenantDirectory);
-        }
-    
-        $json_file_path = storage_path('app/' . $tenantDirectory . '/' . $file->getClientOriginalName() . '.json');
-    
+
+        $json_file_path = storage_path('app/' . $file->getClientOriginalName() . '.json');
         $jsonData = file_put_contents($json_file_path, $json_data);
-    
-        $jsonData = file_get_contents($json_file_path);
+
+        $jsonData = file_get_contents(storage_path('app/' . $file->getClientOriginalName() . '.json'));
         $data = json_decode($jsonData, true);
-    
+
         $existingPartyNames = Ledger::pluck('party_name')->toArray();
-    
+
+        // Initialize a flag to check if all validations pass
+        $valid = true;
+
         foreach ($data as $entry) {
-    
-            if (array_key_exists('tags', $entry)) {
-                $tags = $entry['tags'];
-            } else {
-                // Set default value for 'tags' if not provided in Excel
-                $tags = 'Excel';
-            }
-    
-            // Trim leading and trailing spaces from party name
+            $tags = array_key_exists('tags', $entry) ? $entry['tags'] : 'Excel';
+
             $partyName = trim($entry['Party Name']);
     
-            // Check if party name is empty after trimming
             if ($partyName === '') {
                 return redirect()->back()->with('error', 'Party Name is required.');
             }
     
-            // Check if party name has leading or trailing spaces
             if ($entry['Party Name'] !== $partyName) {
                 return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the party name.');
             }
     
-             // Check if party name already exists in the database
              if (in_array($partyName, $existingPartyNames)) {
                 return redirect()->back()->with('error', 'Party Name "' . $partyName . '" already exists.');
             }
     
-            // Trim leading and trailing spaces from party name
             $groupName = trim($entry['Group Name']);
     
-            // Check if party name is empty after trimming
             if ($groupName === '') {
                 return redirect()->back()->with('error', 'Group Name is required.');
             }
     
-            // Check if party name has leading or trailing spaces
             if ($entry['Group Name'] !== $groupName) {
                 return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the group name.');
             }
-    
-            // Check if applicable_date is empty
-            if (empty($entry['Applicable Date'])) {
-                // Return error response for empty applicable_date
-                return redirect()->back()->with('error', 'Applicable Date is required.');
-            }
-    
-            // Validate applicable_date format
-            try {
-                $applicableDate = Carbon::createFromFormat('d/m/Y', $entry['Applicable Date']);
-            } catch (\Exception $e) {
-                return redirect()->back()->with('error', 'Invalid date format. Date must be in DD/MM/YYYY format.');
-            }
-    
-            // Check if gst_reg_type is provided
-            if (empty($entry['GST Registration Type'])) {
-                return redirect()->back()->with('error', 'GST Registration Type is required.');
-            }
-    
-            // Check if gst_in is provided
-            if (empty($entry['GSTIN/UIN'])) {
-                return redirect()->back()->with('error', 'GSTIN/UIN is required.');
-            }
-    
-            // Validate GSTIN format
+
             if (!preg_match("/^([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]){1}?$/", $entry['GSTIN/UIN'])) {
                 return redirect()->back()->with('error', 'Invalid GSTIN/UIN format.');
             }
+
+            // Check if gst_in is provided
+            if (!empty($entry['GSTIN/UIN'])) {
+                // GSTIN/UIN is provided, so APPLICABLE DATE is required
+                if (empty($entry['Applicable Date'])) {
+                    // Return error response for empty applicable_date
+                    return redirect()->back()->with('error', 'Applicable Date is required when GSTIN/UIN is provided.');
+                }
+
+                // Validate applicable_date format
+                try {
+                    $applicableDate = Carbon::createFromFormat('d/m/Y', $entry['Applicable Date']);
+                } catch (\Exception $e) {
+                    return redirect()->back()->with('error', 'Invalid date format. Date must be in DD/MM/YYYY format.');
+                }
+            } else {
+                // GSTIN/UIN is not provided, so no need to check APPLICABLE DATE
+                $applicableDate = null;
+            }
+
     
-            // Get state code from the list of states
             $stateCode = array_search(strtoupper($entry['State']), array_map('strtoupper', $this->states));
             if ($stateCode === false) {
                 return redirect()->back()->with('error', 'Invalid state code.');
             }
-    
-            // Create ledger record if all validations pass
-            Ledger::create([
-                'party_name' => $partyName,
-                'alias' => $entry['Alias'],
-                'group_name' => $groupName,
-                'credit_period' => $entry['Credit Period'],
-                'buyer_name' => $entry['Buyer/Mailing Name'],
-                'address1' => $entry['Address 1'],
-                'address2' => $entry['Address 2'],
-                'address3' => $entry['Address 3'],
-                'country' => $entry['Country'],
-                'state' => $stateCode, // Save state code instead of state name
-                'pincode' => $entry['Pincode'],
-                'gst_in' => $entry['GSTIN/UIN'],
-                'gst_reg_type' => $entry['GST Registration Type'],
-                'opening_balance' => $entry['Opening Balance DR/CR'],
-                'applicable_date' => $applicableDate->toDateString(),
-                'tags' => $tags,
-            ]);
-    
+
+            
+
+            // if (!isset($entry['Opening Balance DR/CR']) || !is_numeric($entry['Opening Balance DR/CR'])) {
+            //     $valid = false;
+            //     return redirect()->back()->with('error', 'Opening Balance DR/CR must be a numeric value.');
+            // }
+
+            
+            if (!$valid) {
+                break;
+            }
         }
-    
-        // If everything is successful, redirect with success message
-        return redirect()->route('excelImport.ledgers.show')->with('success', __('Ledger Data Save Successfully.'));
+
+        if ($valid) {
+            foreach ($data as $entry) {
+                Ledger::create([
+                    'party_name' => $partyName,
+                    'alias' => $entry['Alias'],
+                    'group_name' => $groupName,
+                    'credit_period' => $entry['Credit Period'],
+                    'buyer_name' => $entry['Buyer/Mailing Name'],
+                    'address1' => $entry['Address 1'],
+                    'address2' => $entry['Address 2'],
+                    'address3' => $entry['Address 3'],
+                    'country' => $entry['Country'],
+                    'state' => $stateCode,
+                    'pincode' => $entry['Pincode'],
+                    'gst_in' => $entry['GSTIN/UIN'],
+                    'gst_reg_type' => $entry['GST Registration Type'],
+                    'opening_balance' => number_format($entry['Opening Balance DR/CR'], 2, '.', ''),
+                    'applicable_date' => $applicableDate->toDateString(),
+                    'tags' => $tags,
+                ]);
+            }
+
+            return redirect()->route('excelImport.ledgers.show')->with('success', __('Ledger Data Save Successfully.'));
+        } else {
+            return redirect()->back()->with('error', 'Data validation failed.');
+        }
     }
     
-
-    // public function ledgerImport(Request $request)
-    // {
-    //     $request->validate([
-    //         'file' => 'required|file'
-    //     ]);
-
-    //     $file = $request->file('file');
-
-    //     $spreadsheet = IOFactory::load($file);
-
-    //     $worksheet = $spreadsheet->getActiveSheet();
-
-    //     $dataArray = $worksheet->toArray(null, true, true, true);
-
-    //     $headings = array_shift($dataArray);
-
-    //     $records = [];
-
-    //     foreach ($dataArray as $row) {
-    //         $record = array_combine($headings, $row);
-    //         $records[] = $record;
-    //     }
-
-    //     $json_data = json_encode($records);
-
-    //     $domain = $request->getHost();
-    //     $tenantId = $this->getTenantIdFromDomain($domain);
-
-    //     $tenantDirectory = 'app/' . $tenantId;
-
-    //     if (!Storage::exists($tenantDirectory)) {
-    //         Storage::makeDirectory($tenantDirectory);
-    //     }
-    
-
-    //     $json_file_path = storage_path('app/json-import' . $tenantDirectory . '/' . $file->getClientOriginalName() . '.json');
-
-    //     $jsonData = file_put_contents($json_file_path, $json_data);
-
-    //     $jsonData = file_get_contents($json_file_path);
-    //     $data = json_decode($jsonData, true);
-
-    //     $existingPartyNames = Ledger::pluck('party_name')->toArray();
-
-    //     foreach ($data as $entry) {
-
-    //         if (array_key_exists('tags', $entry)) {
-    //             $tags = $entry['tags'];
-    //         } else {
-    //             // Set default value for 'tags' if not provided in Excel
-    //             $tags = 'Excel';
-    //         }
-
-    //         // Trim leading and trailing spaces from party name
-    //         $partyName = trim($entry['Party Name']);
-
-    //         // Check if party name is empty after trimming
-    //         if ($partyName === '') {
-    //             return redirect()->back()->with('error', 'Party Name is required.');
-    //         }
-
-    //         // Check if party name has leading or trailing spaces
-    //         if ($entry['Party Name'] !== $partyName) {
-    //             return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the party name.');
-    //         }
-
-    //          // Check if party name already exists in the database
-    //          if (in_array($partyName, $existingPartyNames)) {
-    //             return redirect()->back()->with('error', 'Party Name "' . $partyName . '" already exists.');
-    //         }
-
-    //         // Trim leading and trailing spaces from party name
-    //         $groupName = trim($entry['Group Name']);
-
-    //         // Check if party name is empty after trimming
-    //         if ($groupName === '') {
-    //             return redirect()->back()->with('error', 'Group Name is required.');
-    //         }
-
-    //         // Check if party name has leading or trailing spaces
-    //         if ($entry['Group Name'] !== $groupName) {
-    //             return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the group name.');
-    //         }
-
-    //         // Check if applicable_date is empty
-    //         if (empty($entry['Applicable Date'])) {
-    //             // Return error response for empty applicable_date
-    //             return redirect()->back()->with('error', 'Applicable Date is required.');
-    //         }
-
-    //         // Validate applicable_date format
-    //         try {
-    //             $applicableDate = Carbon::createFromFormat('d/m/Y', $entry['Applicable Date']);
-    //         } catch (\Exception $e) {
-    //             return redirect()->back()->with('error', 'Invalid date format. Date must be in DD/MM/YYYY format.');
-    //         }
-
-    //         // Check if gst_reg_type is provided
-    //         if (empty($entry['GST Registration Type'])) {
-    //             return redirect()->back()->with('error', 'GST Registration Type is required.');
-    //         }
-
-    //         // Check if gst_in is provided
-    //         if (empty($entry['GSTIN/UIN'])) {
-    //             return redirect()->back()->with('error', 'GSTIN/UIN is required.');
-    //         }
-
-    //         // Validate GSTIN format
-    //         if (!preg_match("/^([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]){1}?$/", $entry['GSTIN/UIN'])) {
-    //             return redirect()->back()->with('error', 'Invalid GSTIN/UIN format.');
-    //         }
-
-    //         // Get state code from the list of states
-    //         $stateCode = array_search(strtoupper($entry['State']), array_map('strtoupper', $this->states));
-    //         if ($stateCode === false) {
-    //             return redirect()->back()->with('error', 'Invalid state code.');
-    //         }
-
-    //         Ledger::create([
-    //             'party_name' => $partyName,
-    //             'alias' => $entry['Alias'],
-    //             'group_name' => $groupName,
-    //             'credit_period' => $entry['Credit Period'],
-    //             'buyer_name' => $entry['Buyer/Mailing Name'],
-    //             'address1' => $entry['Address 1'],
-    //             'address2' => $entry['Address 2'],
-    //             'address3' => $entry['Address 3'],
-    //             'country' => $entry['Country'],
-    //             'state' => $stateCode, // Save state code instead of state name
-    //             'pincode' => $entry['Pincode'],
-    //             'gst_in' => $entry['GSTIN/UIN'],
-    //             'gst_reg_type' => $entry['GST Registration Type'],
-    //             'opening_balance' => $entry['Opening Balance DR/CR'],
-    //             'applicable_date' => $applicableDate->toDateString(),
-    //             'tags' => $tags,
-    //         ]);
-
-    //     }
-
-    //     // If everything is successful, redirect with success message
-    //     return redirect()->route('excelImport.ledgers.show')->with('success', __('Ledger Data Save Successfully.'));
-    // }
-
     public function ledgerShow(LedgerDataTable $dataTable)
     {
             return $dataTable->render('app.excelImport._ledger-show');
     }
+
     public function ledgerDestroy($id)
     {
         $ledger = Ledger::find($id);
         $ledger->delete();
         return redirect()->route('excelImport.ledgers.show')->with('success', __('Ledger Data deleted successfully'));
     }
+
     public function ledgerInputStore(Request $request)
     {
         $request->validate([
@@ -447,5 +298,323 @@ class ExcelImportController extends Controller
             return response()->json(['error' => 'Failed to update ledger']);
         }
     }
+
+    //item
+    public function itemCreate()
+    {
+        return view('app.excelImport._item-create');
+    }
+
+    public function itemImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file'
+        ]);
+
+        $file = $request->file('file');
+
+        $spreadsheet = IOFactory::load($file);
+
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        $dataArray = $worksheet->toArray(null, true, true, true);
+
+        $headings = array_shift($dataArray);
+
+        $records = [];
+
+        foreach ($dataArray as $row) {
+            $record = array_combine($headings, $row);
+            $records[] = $record;
+        }
+
+        $json_data = json_encode($records);
+
+        $json_file_path = storage_path('app/' . $file->getClientOriginalName() . '.json');
+        $jsonData = file_put_contents($json_file_path, $json_data);
+
+        $jsonData = file_get_contents(storage_path('app/' . $file->getClientOriginalName() . '.json'));
+        $data = json_decode($jsonData, true);
+
+        // Initialize a flag to check if all validations pass
+        $valid = true;
+
+        foreach ($data as $entry) {
+            $tags = array_key_exists('tags', $entry) ? $entry['tags'] : 'Excel';
+
+            if (!isset($entry['Item Name']) || empty($entry['Item Name'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Item Name is required.');
+            }
+
+            if (!isset($entry['UOM']) || empty($entry['UOM'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'UOM is required.');
+            }
+
+            if (!isset($entry['GST Rate'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'GST Rate is required.');
+            }
+            
+
+            if (isset($entry['GST Rate']) && !empty($entry['GST Rate']) && (!isset($entry['Applicable From']) || empty($entry['Applicable From']))) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Applicable From is required when GST Rate is present.');
+            }
+
+            if (!isset($entry['GST Rate']) || !is_numeric($entry['GST Rate'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'GST Rate must be a numeric value.');
+            }
+
+            if (!isset($entry['CGST Rate']) || !is_numeric($entry['CGST Rate'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'CGST Rate must be a numeric value.');
+            }
+
+            if (!isset($entry['SGST Rate']) || !is_numeric($entry['SGST Rate'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'SGST Rate must be a numeric value.');
+            }
+
+            if (!isset($entry['IGST Rate']) || !is_numeric($entry['IGST Rate'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'IGST Rate must be a numeric value.');
+            }
+
+            if (!isset($entry['Opening QTY']) || !is_numeric($entry['Opening QTY'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Opening QTY must be a numeric value.');
+            }
+
+            if (!isset($entry['Rate']) || !is_numeric($entry['Rate'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Rate must be a numeric value.');
+            }
+
+            if (!isset($entry['Amount']) || !is_numeric($entry['Amount'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Amount must be a numeric value.');
+            }
+            
+
+            
+            if (!$valid) {
+                break;
+            }
+        }
+
+        if ($valid) {
+            foreach ($data as $entry) {
+                Item::create([
+                    'item_name' => $entry['Item Name'],
+                    'uom' => $entry['UOM'],
+                    'alias1' => $entry['Item Code / Alias 1'],
+                    'alias2' => $entry['Item Code / Alias 2'],
+                    'part_no' => $entry['Part No'],
+                    'item_desc' => $entry['Item Description'],
+                    'hsn_code' => $entry['HSN Code'],
+                    'hsn_desc' => $entry['HSN Discription'],
+                    'taxability' => $entry['Taxability'],
+                    'gst_rate' => $entry['GST Rate'],
+                    'applicable_from' => $entry['Applicable From'],
+                    'cgst_rate' => number_format($entry['CGST Rate'], 2, '.', ''),
+                    'sgst_rate' => number_format($entry['SGST Rate'], 2, '.', ''),
+                    'igst_rate' => number_format($entry['IGST Rate'], 2, '.', ''),
+                    'opening_qty' => number_format($entry['Opening QTY'], 2, '.', ''),
+                    'rate' => number_format($entry['Rate'], 2, '.', ''),
+                    'amount' => number_format($entry['Amount'], 2, '.', ''),
+                    'gst_type_of_supply' => $entry['GST TYPE OF SUPPLY'],
+                    'tags' => $tags,
+                ]);
+            }
+
+            return redirect()->route('excelImport.items.show')->with('success', __('Item Data Save Successfully.'));
+        } else {
+            return redirect()->back()->with('error', 'Data validation failed.');
+        }
+    }
+
+    public function itemShow(ItemDataTable $dataTable)
+    {
+        return $dataTable->render('app.excelImport._item-show');
+    }
+
+    public function saleCreate()
+    {
+        return view('app.excelImport._sale-create');
+    }
+
+    public function saleImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file'
+        ]);
+
+        $file = $request->file('file');
+
+        $spreadsheet = IOFactory::load($file);
+
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        $dataArray = $worksheet->toArray(null, true, true, true);
+
+        $headings = array_shift($dataArray);
+
+        $records = [];
+
+        foreach ($dataArray as $row) {
+            $record = array_combine($headings, $row);
+            $records[] = $record;
+        }
+
+        $json_data = json_encode($records);
+
+        $json_file_path = storage_path('app/' . $file->getClientOriginalName() . '.json');
+        $jsonData = file_put_contents($json_file_path, $json_data);
+
+        $jsonData = file_get_contents(storage_path('app/' . $file->getClientOriginalName() . '.json'));
+        $data = json_decode($jsonData, true);
+
+        // Initialize a flag to check if all validations pass
+        $valid = true;
+
+        foreach ($data as $entry) {
+            $tags = array_key_exists('tags', $entry) ? $entry['tags'] : 'Excel';
+
+            if (!isset($entry['Invoice Date']) || empty($entry['Invoice Date'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Invoice Date is required.');
+            }
+            if (!isset($entry['Invoice No']) || empty($entry['Invoice No'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Invoice No is required.');
+            }
+            if (!isset($entry['Bill Ref No']) || empty($entry['Bill Ref No'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Bill Ref No is required.');
+            }
+            if (!isset($entry['Voucher Type']) || empty($entry['Voucher Type'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Voucher Type is required.');
+            }
+            if (!isset($entry['Party Name']) || empty($entry['Party Name'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Party Name is required.');
+            }
+            if (!isset($entry['TAXABLE']) || empty($entry['TAXABLE'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'TAXABLE is required.');
+            }
+            if (!isset($entry['INVOICE AMOUNT']) || empty($entry['INVOICE AMOUNT'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'INVOICE AMOUNT is required.');
+            }
+            if (!preg_match("/^([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]){1}?$/", $entry['GSTIN/UIN'])) {
+                return redirect()->back()->with('error', 'Invalid GSTIN/UIN format.');
+            }
+
+            $stateCode = array_search(strtoupper($entry['State']), array_map('strtoupper', $this->states));
+            if ($stateCode === false) {
+                return redirect()->back()->with('error', 'Invalid state code.');
+            }
+            
+            
+
+            if (!isset($entry['QTY']) || !is_numeric($entry['QTY'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'QTY must be a numeric value.');
+            }
+            if (!isset($entry['Item Rate']) || !is_numeric($entry['Item Rate'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Item Rate must be a numeric value.');
+            }
+            if (!isset($entry['GST Rate']) || !is_numeric($entry['GST Rate'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'GST Rate must be a numeric value.');
+            }
+            if (!isset($entry['TAXABLE']) || !is_numeric($entry['TAXABLE'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'TAXABLE must be a numeric value.');
+            }
+            // if (!isset($entry['SGST']) || !is_numeric($entry['SGST'])) {
+            //     $valid = false;
+            //     return redirect()->back()->with('error', 'SGST must be a numeric value.');
+            // }
+            // if (!isset($entry['CGST']) || !is_numeric($entry['CGST'])) {
+            //     $valid = false;
+            //     return redirect()->back()->with('error', 'CGST must be a numeric value.');
+            // }
+            // if (!isset($entry['IGST']) || !is_numeric($entry['IGST'])) {
+            //     $valid = false;
+            //     return redirect()->back()->with('error', 'IGST must be a numeric value.');
+            // }
+            if (!isset($entry['CESS']) || !is_numeric($entry['CESS'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'CESS must be a numeric value.');
+            }
+            if (!isset($entry['DISCOUNT']) || !is_numeric($entry['DISCOUNT'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'DISCOUNT must be a numeric value.');
+            }
+            if (!isset($entry['INVOICE AMOUNT']) || !is_numeric($entry['INVOICE AMOUNT'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'INVOICE AMOUNT must be a numeric value.');
+            }
+
+            
+            if (!$valid) {
+                break;
+            }
+        }
+
+        if ($valid) {
+            foreach ($data as $entry) {
+                SalePurchaseInvoice::create([
+                    'inv_date' => $entry['Invoice Date'],
+                    'inv_no' => $entry['Invoice No'],
+                    'bill_ref_no' => $entry['Bill Ref No'],
+                    'voucher_type' => $entry['Voucher Type'],
+                    'party_name' => $entry['Party Name'],
+                    'buyer_name' => $entry['Buyer/Mailing Name'],
+                    'address1' => $entry['Address 1'],
+                    'address2' => $entry['Address 2'],
+                    'state' => $stateCode,
+                    'country' => $entry['Country'],
+                    'gst_in' => $entry['GSTIN/UIN'],
+                    'gst_reg_type' => $entry['GST Registration Type'],
+                    'place_of_supply' => $entry['Place of Supply'],
+                    'company_reg_type' => $entry['Company State/ Registration Type'],
+                    'item_name' => $entry['Item Name'],
+                    'item_desc' => $entry['Item Description1'],
+                    'qty' => number_format($entry['QTY'], 2, '.', ''),
+                    'uom' => $entry['UOM'],
+                    'item_rate' => number_format($entry['Item Rate'], 2, '.', ''),
+                    'gst_rate' => number_format($entry['GST Rate'], 2, '.', ''),
+                    'taxable' => number_format($entry['TAXABLE'], 2, '.', ''),
+                    'sgst' => number_format($entry['SGST'], 2, '.', ''),
+                    'cgst' => number_format($entry['CGST'], 2, '.', ''),
+                    'igst' => number_format($entry['IGST'], 2, '.', ''),
+                    'cess' => number_format($entry['CESS'], 2, '.', ''),
+                    'discount' => number_format($entry['DISCOUNT'], 2, '.', ''),
+                    'inv_amt' => number_format($entry['INVOICE AMOUNT'], 2, '.', ''),
+                    'narration' => $entry['Narration'],
+                    'tags' => $tags,
+                ]);
+            }
+
+            return redirect()->route('excelImport.items.show')->with('success', __('Sale Data Save Successfully.'));
+        } else {
+            return redirect()->back()->with('error', 'Data validation failed.');
+        }
+    }
+
+
+    public function saleShow(SalePurchaseDataTable $dataTable)
+    {
+        return $dataTable->render('app.excelImport._sale-show');
+    }
+
 
 }

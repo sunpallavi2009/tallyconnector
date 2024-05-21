@@ -104,10 +104,11 @@ class TenantDataTable extends DataTable
     {
         return [
             Column::make('No')->data('DT_RowIndex')->name('DT_RowIndex')->searchable(false)->orderable(false),
-            Column::make('name')->title(__('Tenant Name')),
+            Column::make('name')->title(__('Name')),
             Column::make('email')->title(__('Email')),
-            Column::make('domain')->title(__('Domain'))->searchable(false),
-            Column::computed('action')->title(__('Action'))
+            // Column::make('status')->title(__('Status')),
+            Column::make('domain')->title(__('DOMAIN NAME'))->searchable(false),
+            Column::computed('action')->title(__('DOMAIN LINK'))
                 ->exportable(false)
                 ->printable(false)
                 ->width(60)

@@ -62,7 +62,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script>
         $(document).ready(function () {
-            var dataTable = $('#ledger-table').DataTable();
+            var dataTable = $('#item-table').DataTable();
 
             // Function to filter DataTable based on selected tags
             function filterData() {
