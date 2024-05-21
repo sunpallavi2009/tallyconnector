@@ -10,6 +10,49 @@ use App\DataTables\App\CompanyDataTable;
 
 class CompanyController extends Controller
 {
+    
+    protected $states=[
+        '01' => 'JAMMU AND KASHMIR',
+        '02' => 'HIMACHAL PRADESH',
+        '03' => 'PUNJAB',
+        '04' => 'CHANDIGARH',
+        '05' => 'UTTARAKHAND',
+        '06' => 'HARYANA',
+        '07' => 'DELHI',
+        '08' => 'RAJASTHAN',
+        '09' => 'UTTAR PRADESH',
+        '10' => 'BIHAR',
+        '11' => 'SIKKIM',
+        '12' => 'ARUNACHAL PRADESH',
+        '13' => 'NAGALAND',
+        '14' => 'MANIPUR',
+        '15' => 'MIZORAM',
+        '16' => 'TRIPURA',
+        '17' => 'MEGHALAYA',
+        '18' => 'ASSAM',
+        '19' => 'WEST BENGAL',
+        '20' => 'JHARKHAND',
+        '21' => 'ODISHA',
+        '22' => 'CHATTISGARH',
+        '23' => 'MADHYA PRADESH',
+        '24' => 'GUJARAT',
+        '25' => 'CHATTISGARH',
+        '26' => 'DADRA AND NAGAR HAVELI AND DAMAN AND DIU (NEWLY MERGED UT)',
+        '27' => 'MAHARASHTRA',
+        '28' => 'ANDHRA PRADESH(BEFORE DIVISION)',
+        '29' => 'KARNATAKA',
+        '30' => 'GOA',
+        '31' => 'LAKSHADWEEP',
+        '32' => 'KERALA',
+        '33' => 'TAMIL NADU',
+        '34' => 'PUDUCHERRY',
+        '35' => 'ANDAMAN AND NICOBAR ISLANDS',
+        '36' => 'TELANGANA',
+        '37' => 'ANDHRA PRADESH (NEWLY ADDED)',
+        '97' => 'OTHER TERRITORY',
+        '99' => 'CENTRE JURISDICTION',
+    ];
+
     public function index(CompanyDataTable $dataTable)
     {
         return $dataTable->render('app.company.index');
@@ -17,47 +60,7 @@ class CompanyController extends Controller
 
     public function create()
     {
-        $states=[
-            '01' => 'JAMMU AND KASHMIR',
-            '02' => 'HIMACHAL PRADESH',
-            '03' => 'PUNJAB',
-            '04' => 'CHANDIGARH',
-            '05' => 'UTTARAKHAND',
-            '06' => 'HARYANA',
-            '07' => 'DELHI',
-            '08' => 'RAJASTHAN',
-            '09' => 'UTTAR PRADESH',
-            '10' => 'BIHAR',
-            '11' => 'SIKKIM',
-            '12' => 'ARUNACHAL PRADESH',
-            '13' => 'NAGALAND',
-            '14' => 'MANIPUR',
-            '15' => 'MIZORAM',
-            '16' => 'TRIPURA',
-            '17' => 'MEGHALAYA',
-            '18' => 'ASSAM',
-            '19' => 'WEST BENGAL',
-            '20' => 'JHARKHAND',
-            '21' => 'ODISHA',
-            '22' => 'CHATTISGARH',
-            '23' => 'MADHYA PRADESH',
-            '24' => 'GUJARAT',
-            '25' => 'CHATTISGARH',
-            '26' => 'DADRA AND NAGAR HAVELI AND DAMAN AND DIU (NEWLY MERGED UT)',
-            '27' => 'MAHARASHTRA',
-            '28' => 'ANDHRA PRADESH(BEFORE DIVISION)',
-            '29' => 'KARNATAKA',
-            '30' => 'GOA',
-            '31' => 'LAKSHADWEEP',
-            '32' => 'KERALA',
-            '33' => 'TAMIL NADU',
-            '34' => 'PUDUCHERRY',
-            '35' => 'ANDAMAN AND NICOBAR ISLANDS',
-            '36' => 'TELANGANA',
-            '37' => 'ANDHRA PRADESH (NEWLY ADDED)',
-            '97' => 'OTHER TERRITORY',
-            '99' => 'CENTRE JURISDICTION',
-        ];
+            $states = $this->states;
             $authToken = Auth::user()->remember_token;
             return view('app.company.create', compact('states','authToken'));
     }
@@ -85,47 +88,7 @@ class CompanyController extends Controller
 
     public function edit($id)
     {
-            $states=[
-                '01' => 'JAMMU AND KASHMIR',
-                '02' => 'HIMACHAL PRADESH',
-                '03' => 'PUNJAB',
-                '04' => 'CHANDIGARH',
-                '05' => 'UTTARAKHAND',
-                '06' => 'HARYANA',
-                '07' => 'DELHI',
-                '08' => 'RAJASTHAN',
-                '09' => 'UTTAR PRADESH',
-                '10' => 'BIHAR',
-                '11' => 'SIKKIM',
-                '12' => 'ARUNACHAL PRADESH',
-                '13' => 'NAGALAND',
-                '14' => 'MANIPUR',
-                '15' => 'MIZORAM',
-                '16' => 'TRIPURA',
-                '17' => 'MEGHALAYA',
-                '18' => 'ASSAM',
-                '19' => 'WEST BENGAL',
-                '20' => 'JHARKHAND',
-                '21' => 'ODISHA',
-                '22' => 'CHATTISGARH',
-                '23' => 'MADHYA PRADESH',
-                '24' => 'GUJARAT',
-                '25' => 'CHATTISGARH',
-                '26' => 'DADRA AND NAGAR HAVELI AND DAMAN AND DIU (NEWLY MERGED UT)',
-                '27' => 'MAHARASHTRA',
-                '28' => 'ANDHRA PRADESH(BEFORE DIVISION)',
-                '29' => 'KARNATAKA',
-                '30' => 'GOA',
-                '31' => 'LAKSHADWEEP',
-                '32' => 'KERALA',
-                '33' => 'TAMIL NADU',
-                '34' => 'PUDUCHERRY',
-                '35' => 'ANDAMAN AND NICOBAR ISLANDS',
-                '36' => 'TELANGANA',
-                '37' => 'ANDHRA PRADESH (NEWLY ADDED)',
-                '97' => 'OTHER TERRITORY',
-                '99' => 'CENTRE JURISDICTION',
-            ];
+            $states = $this->states;
             $company    = Company::find($id);
             return view('app.company.edit', compact('company','states'));
 
