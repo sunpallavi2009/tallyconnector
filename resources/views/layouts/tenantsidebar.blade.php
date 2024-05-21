@@ -16,6 +16,13 @@
                                 <span class="dash-mtext">{{ __('Dashboard') }}</span>
                             </a>
                         </li>
+
+                        <li class="dash-item dash-hasmenu {{ request()->is('companies*') ? 'active' : '' }}">
+                            <a class="dash-link" href="{{ route('companies.index') }}"><span class="dash-micon">
+                                    <i class="fas fa-file-excel"></i></span>
+                                <span class="dash-mtext">{{ __('Company') }}</span>
+                            </a>
+                        </li>
                       
                         <li class="dash-item dash-hasmenu {{ request()->is('excelImport*') ? 'active' : '' }}">
                             <a class="dash-link" href="{{ route('excelImport.index') }}"><span class="dash-micon">

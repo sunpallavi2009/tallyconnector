@@ -1,9 +1,10 @@
 <?php
 
-namespace App\DataTables\Admin;
+namespace App\DataTables\App;
 
-use App\Facades\UtilityFacades;
+use Carbon\Carbon;
 use App\Models\Company;
+use App\Facades\UtilityFacades;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 
@@ -56,10 +57,10 @@ class CompanyDataTable extends DataTable
             ->eloquent($query)
             ->addIndexColumn()
             ->editColumn('created_at', function ($request) {
-                return UtilityFacades::date_time_format($request->created_at);
+                return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
             })
             ->addColumn('action', function (Company $companies) {
-                return view('admin.company.action', compact('companies'));
+                return view('app.company.action', compact('companies'));
             })
             ->addColumn('state', function (Company $companies) {
                 return array_search($companies->state, $this->states);

@@ -54,6 +54,8 @@ Route::middleware([
     
     Route::resource('tenants', TenantController::class);
 
+    // Route::post('ckeditor/upload', [SettingsController::class, 'upload'])->name('ckeditor.upload');
+
     //  JET STREAM
     require __DIR__ . '/auth.php';
 });

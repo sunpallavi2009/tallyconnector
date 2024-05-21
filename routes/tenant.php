@@ -7,6 +7,7 @@ use Laravel\Jetstream\Jetstream;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TenantHomeController;
+use App\Http\Controllers\App\CompanyController;
 use App\Http\Controllers\App\JsonImportController;
 use App\Http\Controllers\App\ExcelImportController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
@@ -111,7 +112,7 @@ Route::middleware([
         Route::get('jsonImport/payment/show', [JsonImportController::class,'paymentShow'])->name('jsonImport.payment.show');
         Route::get('jsonImport/journal/show', [JsonImportController::class,'journalShow'])->name('jsonImport.journal.show');
     
-
+        Route::resource('companies', CompanyController::class);
 
         //  JET STREAM
         require __DIR__ . '/jetstream.php';
