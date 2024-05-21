@@ -50,7 +50,7 @@
 
                         <div class="form-group">
                             {{ Form::label('token_id', __('Token ID'), ['class' => 'form-label']) }}
-                            {!! Form::text('token_id', null, ['class' => 'form-control', 'placeholder' => __('Enter Token ID.')]) !!}
+                            {!! Form::text('token_id', null, ['class' => 'form-control',  'readonly']) !!}
                         </div>
                     </div>
                     <div class="card-footer">

@@ -52,7 +52,7 @@
 
                         <div class="form-group">
                             {{ Form::label('token_id', __('Token ID'), ['class' => 'form-label']) }}
-                            {!! Form::text('token_id', $authToken, ['class' => 'form-control', 'placeholder' => __('Enter Token ID.'), 'readonly']) !!}
+                            {!! Form::text('token_id', $authToken, ['class' => 'form-control', 'readonly']) !!}
                         </div>
                         
                     </div>
