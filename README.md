@@ -5,8 +5,10 @@
 * Run `composer install or php composer.phar install`
 * Run `php artisan key:generate`
 * Run `php artisan migrate`
+* php artisan migrate:tenants
+* php artisan migrate:rollback --batch 4
 * Make Test Domain Like `central.test` 
 * Change `APP_URL` to `http://central.test`in `.env`
 * Run `php artisan db:Seed --class=TenantSeeder`
 
-@import "bootstrap-icons/font/bootstrap-icons.css";
+
