@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DataTables\Admin;
+namespace App\DataTables\App;
 
 use App\Facades\UtilityFacades;
 use App\Models\Bank;

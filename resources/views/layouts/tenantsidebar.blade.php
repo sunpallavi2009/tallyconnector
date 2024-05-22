@@ -97,12 +97,12 @@
                             </a>
                         </li>
 
-                        {{-- <li class="dash-item dash-hasmenu {{ request()->is('gstr1*') ? 'active' : '' }}">
+                        <li class="dash-item dash-hasmenu {{ request()->is('gstr1*') ? 'active' : '' }}">
                             <a class="dash-link" href="{{ route('gstr1.index') }}"><span class="dash-micon">
                                     <i class="fas fa-file"></i></span>
                                 <span class="dash-mtext">{{ __('GSTR1') }}</span>
                             </a>
-                        </li> --}}
+                        </li>
 
                         <li class="dash-item dash-hasmenu {{ request()->is('#*') ? 'active' : '' }}">
                             <a class="dash-link" href=""><span class="dash-micon">

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DataTables\Admin;
+namespace App\DataTables\App;
 
 use App\Models\Ledger;
 use App\Facades\UtilityFacades;

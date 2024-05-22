@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DataTables\Admin;
+namespace App\DataTables\App;
 
 use App\Facades\UtilityFacades;
 use App\Models\SalePurchaseInvoice;
@@ -187,11 +187,11 @@ class SalesInvoiceDataTable extends DataTable
             ->addColumn('txt_amt', function ($row) use ($txt_amt, $rows) {
                 $index = array_search($row, $rows);
                 return $txt_amt[$this->indexNames[$index]] ?? 0;
-            })
-
-            ->editColumn('created_at', function ($request) {
-                return UtilityFacades::date_time_format($request['created_at']);
             });
+
+            // ->editColumn('created_at', function ($request) {
+            //     return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
+            // });
 
     }
 

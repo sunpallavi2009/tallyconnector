@@ -702,7 +702,7 @@ class ExcelImportController extends Controller
         if ($valid) {
             foreach ($data as $entry) {
                 SalePurchaseInvoice::create([
-                    'inv_date' => $entry['Invoice Date'],
+                    'inv_date' => Carbon::createFromFormat('d/m/Y', $entry['Invoice Date'])->toDateString(),
                     'inv_no' => $entry['Invoice No'],
                     'bill_ref_no' => $entry['Bill Ref No'],
                     'voucher_type' => $entry['Voucher Type'],
@@ -734,7 +734,7 @@ class ExcelImportController extends Controller
                 ]);
             }
 
-            return redirect()->route('excelImport.items.show')->with('success', __('Sale Data Save Successfully.'));
+            return redirect()->route('excelImport.sales.show')->with('success', __('Sale Data Save Successfully.'));
         } else {
             return redirect()->back()->with('error', 'Data validation failed.');
         }

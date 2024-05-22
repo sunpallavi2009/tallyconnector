@@ -7,6 +7,7 @@ use Laravel\Jetstream\Jetstream;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TenantHomeController;
+use App\Http\Controllers\App\Gstr1Controller;
 use App\Http\Controllers\App\CompanyController;
 use App\Http\Controllers\App\JsonImportController;
 use App\Http\Controllers\App\ExcelImportController;
@@ -113,6 +114,17 @@ Route::middleware([
         Route::get('jsonImport/journal/show', [JsonImportController::class,'journalShow'])->name('jsonImport.journal.show');
     
         Route::resource('companies', CompanyController::class);
+
+        //gstr1
+        Route::resource('gstr1', Gstr1Controller::class);
+        Route::get('gstr1/b2b/show', [Gstr1Controller::class, 'b2bData'])->name('gstr1.b2b');
+        Route::get('gstr1/b2cl/show', [Gstr1Controller::class, 'b2clData'])->name('gstr1.b2cl');
+        Route::get('gstr1/b2cs/show', [Gstr1Controller::class, 'b2csData'])->name('gstr1.b2cs');
+        Route::get('gstr1/cdnr/show', [Gstr1Controller::class, 'cdnrData'])->name('gstr1.cdnr');
+        Route::get('gstr1/cdnur/show', [Gstr1Controller::class, 'cdnurData'])->name('gstr1.cdnur');
+        Route::get('gstr1/exp/show', [Gstr1Controller::class, 'expData'])->name('gstr1.exp');
+        Route::get('gstr1/nil/show', [Gstr1Controller::class, 'nilData'])->name('gstr1.nil');
+
 
         //  JET STREAM
         require __DIR__ . '/jetstream.php';
