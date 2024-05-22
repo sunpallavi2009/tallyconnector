@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\App;
 
 use Carbon\Carbon;
+use App\Models\Bank;
 use App\Models\Item;
 use App\Models\Ledger;
+use App\Models\Company;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Models\SalePurchaseInvoice;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\DataTables\App\BankDataTable;
@@ -17,8 +20,6 @@ use App\DataTables\App\LedgerDataTable;
 use Illuminate\Support\Facades\Storage;
 use App\DataTables\App\JournalDataTable;
 use App\DataTables\App\PurchaseDataTable;
-use App\Models\Bank;
-use App\Models\SalePurchaseInvoice;
 use Illuminate\Support\Facades\Validator;
 
 class JsonImportController extends Controller
@@ -70,90 +71,87 @@ class JsonImportController extends Controller
         return $dataTable->render('app.jsonImport.index');
     }
 
-    public function ledgerJsonImport(Request $request)
+    public function ledgerJsonImport(Request $request, $token_id, $company_id)
     {
         try {
             $jsonData = $request->getContent();
-            $fileName = 'ledger_data_' . date('YmdHis') . '.json'; 
-            
-            $jsonFilePath = storage_path('app/' . $fileName);
-            file_put_contents($jsonFilePath, $jsonData);
-
-            $jsonData = file_get_contents($jsonFilePath);
             $data = json_decode($jsonData, true);
 
             if (!$data) {
-                throw new \Exception('Invalid JSON data.');
+                return response()->json(['error' => 'Invalid JSON data.'], 400);
+            }
+
+            // Validate the type
+            if (!isset($data['type']) || $data['type'] !== 'ledger') {
+                return response()->json(['error' => 'Invalid type. Only ledger data is allowed.'], 400);
+            }
+
+            // Validate the token_id and company_id against the Company model
+            $company = Company::where('id', $company_id)->where('token_id', $token_id)->first();
+            if (!$company) {
+                return response()->json(['error' => 'Invalid token_id or company_id.'], 400);
+            }
+
+            // Extract ledger entries
+            $ledgerEntries = $data['ledgers'] ?? null;
+            if (!$ledgerEntries) {
+                return response()->json(['error' => 'No ledger data found.'], 400);
             }
 
             $existingPartyNames = Ledger::pluck('party_name')->toArray();
-            foreach ($data as $entry) {
+            foreach ($ledgerEntries as $entry) {
 
                 $tags = 'Tally'; 
-            
-
+                
                 $partyName = trim($entry['Party Name']);
 
-                // Check if party name is empty after trimming
                 if ($partyName === '') {
-                    return redirect()->back()->with('error', 'Party Name is required.');
+                    return response()->json(['error' => 'Party Name is required.'], 400);
                 }
 
-                // Check if party name has leading or trailing spaces
                 if ($entry['Party Name'] !== $partyName) {
-                    return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the party name.');
+                    return response()->json(['error' => 'Remove spaces at the beginning and end of the party name.'], 400);
                 }
 
-                // Check if party name already exists in the database
                 if (in_array($partyName, $existingPartyNames)) {
-                    return redirect()->back()->with('error', 'Party Name "' . $partyName . '" already exists.');
+                    return response()->json(['error' => 'Party Name "' . $partyName . '" already exists.'], 400);
                 }
 
-                // Trim leading and trailing spaces from party name
                 $groupName = trim($entry['Group Name']);
 
-                // Check if party name is empty after trimming
                 if ($groupName === '') {
-                    return redirect()->back()->with('error', 'Group Name is required.');
+                    return response()->json(['error' => 'Group Name is required.'], 400);
                 }
 
-                // Check if party name has leading or trailing spaces
                 if ($entry['Group Name'] !== $groupName) {
-                    return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the group name.');
+                    return response()->json(['error' => 'Remove spaces at the beginning and end of the group name.'], 400);
                 }
 
-                // Check if applicable_date is empty
                 if (empty($entry['Applicable Date'])) {
-                    // Return error response for empty applicable_date
-                    return redirect()->back()->with('error', 'Applicable Date is required.');
+                    return response()->json(['error' => 'Applicable Date is required.'], 400);
                 }
 
-                // Validate applicable_date format
                 try {
                     $applicableDate = Carbon::createFromFormat('d/m/Y', $entry['Applicable Date']);
                 } catch (\Exception $e) {
-                    return redirect()->back()->with('error', 'Invalid date format. Date must be in DD/MM/YYYY format.');
+                    return response()->json(['error' => 'Invalid date format. Date must be in DD/MM/YYYY format.'], 400);
                 }
 
-                // Check if gst_reg_type is provided
                 if (empty($entry['GST Registration Type'])) {
-                    return redirect()->back()->with('error', 'GST Registration Type is required.');
+                    return response()->json(['error' => 'GST Registration Type is required.'], 400);
                 }
 
-                // Check if gst_in is provided
                 if (empty($entry['GSTIN/UIN'])) {
-                    return redirect()->back()->with('error', 'GSTIN/UIN is required.');
+                    return response()->json(['error' => 'GSTIN/UIN is required.'], 400);
                 }
 
-                // Validate GSTIN format
                 if (!preg_match("/^([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]){1}?$/", $entry['GSTIN/UIN'])) {
-                    return redirect()->back()->with('error', 'Invalid GSTIN/UIN format.');
+                    return response()->json(['error' => 'Invalid GSTIN/UIN format.'], 400);
                 }
 
-                // Get state code from the list of states
                 $stateCode = array_search(strtoupper($entry['State']), array_map('strtoupper', $this->states));
                 if ($stateCode === false) {
-                    return redirect()->back()->with('error', 'Invalid state code.');
+                    return response()->json(['error' => 'Invalid state code.'], 400);
                 }
 
                 $newData = Ledger::create([
@@ -187,6 +185,110 @@ class JsonImportController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    // public function ledgerJsonImport(Request $request)
+    // {
+    //     try {
+    //         $jsonData = $request->getContent();
+    //         $fileName = 'ledger_data_' . date('YmdHis') . '.json'; 
+            
+    //         $jsonFilePath = storage_path('app/' . $fileName);
+    //         file_put_contents($jsonFilePath, $jsonData);
+
+    //         $jsonData = file_get_contents($jsonFilePath);
+    //         $data = json_decode($jsonData, true);
+
+    //         if (!$data) {
+    //             throw new \Exception('Invalid JSON data.');
+    //         }
+
+    //         $existingPartyNames = Ledger::pluck('party_name')->toArray();
+    //         foreach ($data as $entry) {
+
+    //             $tags = 'Tally'; 
+            
+    //             $partyName = trim($entry['Party Name']);
+
+    //             if ($partyName === '') {
+    //                 return redirect()->back()->with('error', 'Party Name is required.');
+    //             }
+
+    //             if ($entry['Party Name'] !== $partyName) {
+    //                 return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the party name.');
+    //             }
+
+    //             if (in_array($partyName, $existingPartyNames)) {
+    //                 return redirect()->back()->with('error', 'Party Name "' . $partyName . '" already exists.');
+    //             }
+
+    //             $groupName = trim($entry['Group Name']);
+
+    //             if ($groupName === '') {
+    //                 return redirect()->back()->with('error', 'Group Name is required.');
+    //             }
+
+    //             if ($entry['Group Name'] !== $groupName) {
+    //                 return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the group name.');
+    //             }
+
+    //             if (empty($entry['Applicable Date'])) {
+    //                 return redirect()->back()->with('error', 'Applicable Date is required.');
+    //             }
+
+    //             try {
+    //                 $applicableDate = Carbon::createFromFormat('d/m/Y', $entry['Applicable Date']);
+    //             } catch (\Exception $e) {
+    //                 return redirect()->back()->with('error', 'Invalid date format. Date must be in DD/MM/YYYY format.');
+    //             }
+
+    //             if (empty($entry['GST Registration Type'])) {
+    //                 return redirect()->back()->with('error', 'GST Registration Type is required.');
+    //             }
+
+    //             if (empty($entry['GSTIN/UIN'])) {
+    //                 return redirect()->back()->with('error', 'GSTIN/UIN is required.');
+    //             }
+
+    //             if (!preg_match("/^([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]){1}?$/", $entry['GSTIN/UIN'])) {
+    //                 return redirect()->back()->with('error', 'Invalid GSTIN/UIN format.');
+    //             }
+
+    //             $stateCode = array_search(strtoupper($entry['State']), array_map('strtoupper', $this->states));
+    //             if ($stateCode === false) {
+    //                 return redirect()->back()->with('error', 'Invalid state code.');
+    //             }
+
+    //             $newData = Ledger::create([
+    //                 'party_name' => $partyName,
+    //                 'alias' => $entry['Alias'],
+    //                 'group_name' => $groupName,
+    //                 'credit_period' => $entry['Credit Period'],
+    //                 'buyer_name' => $entry['Buyer/Mailing Name'],
+    //                 'address1' => $entry['Address 1'],
+    //                 'address2' => $entry['Address 2'],
+    //                 'address3' => $entry['Address 3'],
+    //                 'country' => $entry['Country'],
+    //                 'state' => $stateCode, // Save state code instead of state name
+    //                 'pincode' => $entry['Pincode'],
+    //                 'gst_in' => $entry['GSTIN/UIN'],
+    //                 'gst_reg_type' => $entry['GST Registration Type'],
+    //                 'opening_balance' => $entry['Opening Balance DR/CR'],
+    //                 'applicable_date' => $applicableDate->toDateString(),
+    //                 'tags' => $tags
+    //             ]);
+
+    //             if (!$newData) {
+    //                 throw new \Exception('Failed to create data record.');
+    //             }
+    //         }
+
+    //         return response()->json(['message' => 'Ledger data saved successfully.']);
+
+    //     } catch (\Exception $e) {
+    //         Log::error('Error importing data: ' . $e->getMessage());
+    //         return response()->json(['error' => $e->getMessage()], 500);
+    //     }
+    // }
 
     public function itemShow(ItemDataTable $dataTable)
     {

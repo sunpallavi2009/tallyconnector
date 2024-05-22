@@ -31,6 +31,7 @@ return new class extends Migration
             $table->decimal('opening_balance')->nullable();
             $table->date('applicable_date')->nullable();
             $table->string('tags')->nullable();
+            $table->string('tally_guid')->nullable();
             $table->timestamps();
         });
     }

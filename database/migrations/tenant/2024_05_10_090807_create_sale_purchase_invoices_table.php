@@ -48,6 +48,7 @@ return new class extends Migration
             $table->date('original_invoice_date')->nullable();
             $table->string('reason_code')->nullable();
             $table->string('tags')->nullable();
+            $table->string('tally_guid')->nullable();
             $table->timestamps();
         });
     }

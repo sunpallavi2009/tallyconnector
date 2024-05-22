@@ -32,6 +32,7 @@ return new class extends Migration
             $table->string('debit_ledgers')->nullable();
             $table->string('narration')->nullable();
             $table->string('tags')->nullable();
+            $table->string('tally_guid')->nullable();
             $table->timestamps();
         });
     }

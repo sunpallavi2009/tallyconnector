@@ -34,6 +34,7 @@ return new class extends Migration
             $table->decimal('amount')->nullable();
             $table->string('gst_type_of_supply')->nullable();
             $table->string('tags')->nullable();
+            $table->string('tally_guid')->nullable();
             $table->timestamps();
         });
     }

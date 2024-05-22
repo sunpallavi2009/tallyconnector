@@ -20,7 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::post('/ledgers', [JsonImportController::class, 'ledgerJsonImport'])->name('jsonImport.ledgers.import');
+Route::post('/ledgers/{token_id}/{company_id}', [JsonImportController::class, 'ledgerJsonImport'])->name('jsonImport.ledgers.import');
 Route::post('/items', [JsonImportController::class, 'itemJsonImport'])->name('jsonImport.items.import');
 Route::post('/sales', [JsonImportController::class, 'saleJsonImport'])->name('jsonImport.sales.import');
 Route::post('/purchase', [JsonImportController::class, 'purchaseJsonImport'])->name('jsonImport.purchase.import');

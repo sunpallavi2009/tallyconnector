@@ -10,13 +10,14 @@ use Illuminate\Http\Request;
 use App\Models\SalePurchaseInvoice;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\File;
 use App\DataTables\App\BankDataTable;
 use App\DataTables\App\ItemDataTable;
 use App\DataTables\App\LedgerDataTable;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\DataTables\App\JournalDataTable;
 use App\DataTables\App\SalePurchaseDataTable;
-use Illuminate\Support\Facades\Storage;
 // use Illuminate\Support\Facades\Request;
 // use Illuminate\Support\Facades\Validator; 
 
@@ -83,6 +84,7 @@ class ExcelImportController extends Controller
         return $subdomain;
     }
 
+    
     public function ledgerImport(Request $request)
     {
         $request->validate([
@@ -108,40 +110,49 @@ class ExcelImportController extends Controller
 
         $json_data = json_encode($records);
 
-        $json_file_path = storage_path('app/' . $file->getClientOriginalName() . '.json');
-        $jsonData = file_put_contents($json_file_path, $json_data);
+        // Define the directory and file path
+        $directory = storage_path('app');
+        $json_file_path = $directory . '/' . $file->getClientOriginalName() . '.json';
 
-        $jsonData = file_get_contents(storage_path('app/' . $file->getClientOriginalName() . '.json'));
+        // Ensure the directory exists
+        if (!File::isDirectory($directory)) {
+            File::makeDirectory($directory, 0755, true, true);
+        }
+
+        file_put_contents($json_file_path, $json_data);
+
+        $jsonData = file_get_contents($json_file_path);
         $data = json_decode($jsonData, true);
-
-        $existingPartyNames = Ledger::pluck('party_name')->toArray();
 
         // Initialize a flag to check if all validations pass
         $valid = true;
 
+        $existingPartyNames = Ledger::pluck('party_name')->toArray();
+
         foreach ($data as $entry) {
+
             $tags = array_key_exists('tags', $entry) ? $entry['tags'] : 'Excel';
 
             $partyName = trim($entry['Party Name']);
-    
+
             if ($partyName === '') {
                 return redirect()->back()->with('error', 'Party Name is required.');
             }
-    
+
             if ($entry['Party Name'] !== $partyName) {
                 return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the party name.');
             }
-    
-             if (in_array($partyName, $existingPartyNames)) {
+
+            if (in_array($partyName, $existingPartyNames)) {
                 return redirect()->back()->with('error', 'Party Name "' . $partyName . '" already exists.');
             }
-    
+
             $groupName = trim($entry['Group Name']);
-    
+
             if ($groupName === '') {
                 return redirect()->back()->with('error', 'Group Name is required.');
             }
-    
+
             if ($entry['Group Name'] !== $groupName) {
                 return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the group name.');
             }
@@ -169,20 +180,11 @@ class ExcelImportController extends Controller
                 $applicableDate = null;
             }
 
-    
             $stateCode = array_search(strtoupper($entry['State']), array_map('strtoupper', $this->states));
             if ($stateCode === false) {
                 return redirect()->back()->with('error', 'Invalid state code.');
             }
 
-            
-
-            // if (!isset($entry['Opening Balance DR/CR']) || !is_numeric($entry['Opening Balance DR/CR'])) {
-            //     $valid = false;
-            //     return redirect()->back()->with('error', 'Opening Balance DR/CR must be a numeric value.');
-            // }
-
-            
             if (!$valid) {
                 break;
             }
@@ -191,9 +193,9 @@ class ExcelImportController extends Controller
         if ($valid) {
             foreach ($data as $entry) {
                 Ledger::create([
-                    'party_name' => $partyName,
+                    'party_name' => $entry['Party Name'],
                     'alias' => $entry['Alias'],
-                    'group_name' => $groupName,
+                    'group_name' => $entry['Group Name'],
                     'credit_period' => $entry['Credit Period'],
                     'buyer_name' => $entry['Buyer/Mailing Name'],
                     'address1' => $entry['Address 1'],
@@ -205,7 +207,7 @@ class ExcelImportController extends Controller
                     'gst_in' => $entry['GSTIN/UIN'],
                     'gst_reg_type' => $entry['GST Registration Type'],
                     'opening_balance' => number_format($entry['Opening Balance DR/CR'], 2, '.', ''),
-                    'applicable_date' => $applicableDate->toDateString(),
+                    'applicable_date' => $applicableDate ? $applicableDate->toDateString() : null,
                     'tags' => $tags,
                 ]);
             }
@@ -215,7 +217,135 @@ class ExcelImportController extends Controller
             return redirect()->back()->with('error', 'Data validation failed.');
         }
     }
+
+    // public function ledgerImport(Request $request)
+    // {
+    //     $request->validate([
+    //         'file' => 'required|file'
+    //     ]);
+
+    //     $file = $request->file('file');
+
+    //     $spreadsheet = IOFactory::load($file);
+
+    //     $worksheet = $spreadsheet->getActiveSheet();
+
+    //     $dataArray = $worksheet->toArray(null, true, true, true);
+
+    //     $headings = array_shift($dataArray);
+
+    //     $records = [];
+
+    //     foreach ($dataArray as $row) {
+    //         $record = array_combine($headings, $row);
+    //         $records[] = $record;
+    //     }
+
+    //     $json_data = json_encode($records);
+
+    //     $json_file_path = storage_path('app/' . $file->getClientOriginalName() . '.json');
+    //     $jsonData = file_put_contents($json_file_path, $json_data);
+
+    //     $jsonData = file_get_contents(storage_path('app/' . $file->getClientOriginalName() . '.json'));
+    //     $data = json_decode($jsonData, true);
+
+    //     // Initialize a flag to check if all validations pass
+    //     $valid = true;
+
+    //     $existingPartyNames = Ledger::pluck('party_name')->toArray();
+
+    //     foreach ($data as $entry) {
+
+    //         $tags = array_key_exists('tags', $entry) ? $entry['tags'] : 'Excel';
+
+    //         $partyName = trim($entry['Party Name']);
     
+    //         if ($partyName === '') {
+    //             return redirect()->back()->with('error', 'Party Name is required.');
+    //         }
+    
+    //         if ($entry['Party Name'] !== $partyName) {
+    //             return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the party name.');
+    //         }
+    
+    //          if (in_array($partyName, $existingPartyNames)) {
+    //             return redirect()->back()->with('error', 'Party Name "' . $partyName . '" already exists.');
+    //         }
+    
+    //         $groupName = trim($entry['Group Name']);
+    
+    //         if ($groupName === '') {
+    //             return redirect()->back()->with('error', 'Group Name is required.');
+    //         }
+    
+    //         if ($entry['Group Name'] !== $groupName) {
+    //             return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the group name.');
+    //         }
+
+    //         if (!preg_match("/^([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]){1}?$/", $entry['GSTIN/UIN'])) {
+    //             return redirect()->back()->with('error', 'Invalid GSTIN/UIN format.');
+    //         }
+
+    //         // Check if gst_in is provided
+    //         if (!empty($entry['GSTIN/UIN'])) {
+    //             // GSTIN/UIN is provided, so APPLICABLE DATE is required
+    //             if (empty($entry['Applicable Date'])) {
+    //                 // Return error response for empty applicable_date
+    //                 return redirect()->back()->with('error', 'Applicable Date is required when GSTIN/UIN is provided.');
+    //             }
+
+    //             // Validate applicable_date format
+    //             try {
+    //                 $applicableDate = Carbon::createFromFormat('d/m/Y', $entry['Applicable Date']);
+    //             } catch (\Exception $e) {
+    //                 return redirect()->back()->with('error', 'Invalid date format. Date must be in DD/MM/YYYY format.');
+    //             }
+    //         } else {
+    //             // GSTIN/UIN is not provided, so no need to check APPLICABLE DATE
+    //             $applicableDate = null;
+    //         }
+
+    
+    //         $stateCode = array_search(strtoupper($entry['State']), array_map('strtoupper', $this->states));
+    //         if ($stateCode === false) {
+    //             return redirect()->back()->with('error', 'Invalid state code.');
+    //         }
+            
+
+            
+    //         if (!$valid) {
+    //             break;
+    //         }
+    //     }
+
+    //     if ($valid) {
+    //         foreach ($data as $entry) {
+    //             Ledger::create([
+    //                 'party_name' => $partyName,
+    //                 'alias' => $entry['Alias'],
+    //                 'group_name' => $groupName,
+    //                 'credit_period' => $entry['Credit Period'],
+    //                 'buyer_name' => $entry['Buyer/Mailing Name'],
+    //                 'address1' => $entry['Address 1'],
+    //                 'address2' => $entry['Address 2'],
+    //                 'address3' => $entry['Address 3'],
+    //                 'country' => $entry['Country'],
+    //                 'state' => $stateCode,
+    //                 'pincode' => $entry['Pincode'],
+    //                 'gst_in' => $entry['GSTIN/UIN'],
+    //                 'gst_reg_type' => $entry['GST Registration Type'],
+    //                 'opening_balance' => number_format($entry['Opening Balance DR/CR'], 2, '.', ''),
+    //                 'applicable_date' => $applicableDate->toDateString(),
+    //                 'tags' => $tags,
+    //             ]);
+    //         }
+
+    //         return redirect()->route('excelImport.ledgers.show')->with('success', __('Ledger Data Save Successfully.'));
+    //     } else {
+    //         return redirect()->back()->with('error', 'Data validation failed.');
+    //     }
+    // }
+   
     public function ledgerShow(LedgerDataTable $dataTable)
     {
             return $dataTable->render('app.excelImport._ledger-show');
