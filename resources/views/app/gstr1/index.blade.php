@@ -46,7 +46,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-xl-12">
+                            <div class="col-xl-6">
                                 <div class="card-body table-border-style">
                                     <div class="table-responsive">
                                         {{ $dataTable->table(['width' => '100%']) }}
@@ -55,7 +55,11 @@
                             </div>
 
                             <div class="col-xl-6">
-                               
+                                <div class="card-body table-border-style">
+                                    <div class="table-responsive">
+                                        @include('app.gstr1._gstAuth')
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

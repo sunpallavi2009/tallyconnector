@@ -23,26 +23,54 @@ class Gstr1Controller extends Controller
 {
     public function index(Request $request, SalesInvoiceDataTable $dataTable)
     {
+        //***gstAuth Data***
+        $params = [
+            'gstin' => '27AAGFI0474G1ZG',
+            'retperiod' => '012024',
+            'email' => 'irriion@gmail.com',
+            'smrytyp' => 'L',
+        ];
+        $headers = [
+            'gst_username' => 'aagfi0474g1',
+            'state_cd' => '27',
+            'ip_address' => '$this->IP_ADDRESS',
+            'txn' => 'e0067f9c60024100a72ba3d60e7d9efa',
+            'retperiod' => '012024',
+    
+        ];
+        $response = $this->doRequest('gstr1',['query' => $params,'headers' => $headers]);
+        $data = $response->getBody()->getContents();
+        //return $data;
+    
+        $jsonData = json_decode($data, true);
+        //dd( $jsonData);
+        //***gstAuth Data***
+
         $companies = Company::get();
-        return $dataTable->render('app.gstr1.index', compact('companies'));
+        return $dataTable->render('app.gstr1.index', compact('companies','jsonData'));
     }
+
     public function b2bData(Request $request, B2BDataTable $dataTable)
     {
         $tags = $request->tags;
         return $dataTable->with('tags', $tags)->render('app.gstr1._b2b');
     }
+
     public function b2clData(B2CLDataTable $dataTable)
     {
         return $dataTable->render('app.gstr1._b2cl');
     }
+
     public function b2csData(B2CSDataTable $dataTable)
     {
         return $dataTable->render('app.gstr1._b2cs');
     }
+
     public function cdnrData(CDNRDataTable $dataTable)
     {
         return $dataTable->render('app.gstr1._cdnr');
     }
+
     public function cdnurData(CDNURDataTable $dataTable)
     {
         return $dataTable->render('app.gstr1._cdnur');
@@ -51,6 +79,7 @@ class Gstr1Controller extends Controller
     {
         return $dataTable->render('app.gstr1._exp');
     }
+    
     public function nilData(NILDataTable $dataTable)
     {
         return $dataTable->render('app.gstr1._nil');
@@ -109,7 +138,6 @@ class Gstr1Controller extends Controller
         // return $data;
     }
 
-
     public function otpVerify(Request $request){
         $otp = $request->input('otp');
         $params = ['email' => 'irriion@gmail.com','otp' => $otp ];
@@ -140,4 +168,30 @@ class Gstr1Controller extends Controller
             }
             return $response;
     }
+
+    // public function getGSTR1Summary(){
+    //     $params = [
+    //         'gstin' => '27AAGFI0474G1ZG',
+    //         'retperiod' => '012024',
+    //         'email' => 'irriion@gmail.com',
+    //         'smrytyp' => 'L',
+    //     ];
+    //     $headers = [
+    //         'gst_username' => 'aagfi0474g1',
+    //         'state_cd' => '27',
+    //         'ip_address' => '$this->IP_ADDRESS',
+    //         'txn' => 'e0067f9c60024100a72ba3d60e7d9efa',
+    //         'retperiod' => '012024',
+    
+    //     ];
+    //     $response = $this->doRequest('gstr1',['query' => $params,'headers' => $headers]);
+    //     $data = $response->getBody()->getContents();
+    //     //return $data;
+    
+       
+    //       $jsonData = json_decode($data, true);
+    //     //dd( $jsonData);
+    //     // // Pass the JSON data to the view
+    //     return view('app.gstr1._gstAuth', compact('jsonData'));
+    // }
 }

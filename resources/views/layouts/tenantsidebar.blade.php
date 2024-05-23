@@ -97,11 +97,20 @@
                             </a>
                         </li>
 
-                        <li class="dash-item dash-hasmenu {{ request()->is('gstr1*') ? 'active' : '' }}">
-                            <a class="dash-link" href="{{ route('gstr1.index') }}"><span class="dash-micon">
-                                    <i class="fas fa-file"></i></span>
-                                <span class="dash-mtext">{{ __('GSTR1') }}</span>
-                            </a>
+
+                        <li class="dash-item dash-hasmenu {{ request()->is('gstr1*') || request()->is('gstr1*') ? 'active dash-trigger' : 'collapsed' }}">
+                            <a href="#!" class="dash-link"><span class="dash-micon"><i
+                                        class="ti ti-layout-2"></i></span><span
+                                    class="dash-mtext">{{ __('GSTR1') }}</span><span class="dash-arrow"><i
+                                        data-feather="chevron-right"></i></span></a>
+                            <ul class="dash-submenu">
+                                    <li class="dash-item {{ request()->is('gstr1*') ? 'active' : '' }}">
+                                        <a class="dash-link" href="{{ route('gstr1.index') }}">{{ __('GSTR1') }}</a>
+                                    </li>
+                                    <li class="dash-item {{ request()->is('gstr1*') ? 'active' : '' }}">
+                                        <a class="dash-link" href="{{ route('gstr1.index') }}">{{ __('GSTR1A') }}</a>
+                                    </li>
+                            </ul>
                         </li>
 
                         <li class="dash-item dash-hasmenu {{ request()->is('#*') ? 'active' : '' }}">
