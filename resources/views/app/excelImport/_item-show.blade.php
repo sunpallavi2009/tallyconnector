@@ -1,5 +1,5 @@
 @extends('layouts.tenant')
-@section('title', __('Excel Import'))
+@section('title', __('Excel Import | Preciseca'))
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
     <li class="breadcrumb-item"><a href="{{ route('excelImport.index') }}">{{ __('Excel Import') }}</a></li>

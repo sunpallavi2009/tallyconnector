@@ -4,6 +4,7 @@ namespace App\Http\Controllers\App;
 
 
 use Carbon\Carbon;
+use App\Models\Bank;
 use App\Models\Item;
 use App\Models\Ledger;
 use Illuminate\Http\Request;
@@ -548,7 +549,7 @@ class ExcelImportController extends Controller
                     'hsn_desc' => $entry['HSN Discription'],
                     'taxability' => $entry['Taxability'],
                     'gst_rate' => $entry['GST Rate'],
-                    'applicable_from' => $entry['Applicable From'],
+                    'applicable_from' => Carbon::createFromFormat('d/m/Y', $entry['Applicable From'])->toDateString(),
                     'cgst_rate' => number_format($entry['CGST Rate'], 2, '.', ''),
                     'sgst_rate' => number_format($entry['SGST Rate'], 2, '.', ''),
                     'igst_rate' => number_format($entry['IGST Rate'], 2, '.', ''),
@@ -740,11 +741,402 @@ class ExcelImportController extends Controller
         }
     }
 
-
     public function saleShow(SalePurchaseDataTable $dataTable)
     {
         return $dataTable->render('app.excelImport._sale-show');
     }
 
+    //Purchase
+
+    public function purchaseCreate()
+    {
+        return view('app.excelImport._purchase-create');
+    }
+
+    public function purchaseImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file'
+        ]);
+
+        $file = $request->file('file');
+
+        $spreadsheet = IOFactory::load($file);
+
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        $dataArray = $worksheet->toArray(null, true, true, true);
+
+        $headings = array_shift($dataArray);
+
+        $records = [];
+
+        foreach ($dataArray as $row) {
+            $record = array_combine($headings, $row);
+            $records[] = $record;
+        }
+
+        $json_data = json_encode($records);
+
+        $json_file_path = storage_path('app/' . $file->getClientOriginalName() . '.json');
+        $jsonData = file_put_contents($json_file_path, $json_data);
+
+        $jsonData = file_get_contents(storage_path('app/' . $file->getClientOriginalName() . '.json'));
+        $data = json_decode($jsonData, true);
+
+        // Initialize a flag to check if all validations pass
+        $valid = true;
+
+        $existingPartyNames = SalePurchaseInvoice::pluck('party_name')->toArray();
+
+        foreach ($data as $entry) {
+            $tags = array_key_exists('tags', $entry) ? $entry['tags'] : 'Excel';
+
+            $partyName = trim($entry['Party Name']);
+
+            if ($partyName === '') {
+                return redirect()->back()->with('error', 'Party Name is required.');
+            }
+
+            if ($entry['Party Name'] !== $partyName) {
+                return redirect()->back()->with('error', 'Remove spaces at the beginning and end of the party name.');
+            }
+
+            if (in_array($partyName, $existingPartyNames)) {
+                return redirect()->back()->with('error', 'Party Name "' . $partyName . '" already exists.');
+            }
+
+            $stateCode = array_search(strtoupper($entry['State']), array_map('strtoupper', $this->states));
+            if ($stateCode === false) {
+                return redirect()->back()->with('error', 'Invalid state code.');
+            }
+
+            if (!isset($entry['Invoice Date']) || empty($entry['Invoice Date'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Invoice Date is required.');
+            }
+            if (!isset($entry['Invoice No']) || empty($entry['Invoice No'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Invoice No is required.');
+            }
+            if (!isset($entry['Bill Ref No']) || empty($entry['Bill Ref No'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Bill Ref No is required.');
+            }
+            if (!isset($entry['Voucher Type']) || empty($entry['Voucher Type'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Voucher Type is required.');
+            }
+            if (!isset($entry['Party Name']) || empty($entry['Party Name'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'Party Name is required.');
+            }
+            if (!isset($entry['TAXABLE']) || empty($entry['TAXABLE'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'TAXABLE is required.');
+            }
+            if (!isset($entry['INVOICE AMOUNT']) || empty($entry['INVOICE AMOUNT'])) {
+                $valid = false;
+                return redirect()->back()->with('error', 'INVOICE AMOUNT is required.');
+            }
+            
+
+            
+            if (!$valid) {
+                break;
+            }
+        }
+
+        if ($valid) {
+            foreach ($data as $entry) {
+                SalePurchaseInvoice::create([
+                    'inv_date' => Carbon::createFromFormat('d/m/Y', $entry['Invoice Date'])->toDateString(),
+                    'inv_no' => $entry['Invoice No'],
+                    'bill_ref_no' => $entry['Bill Ref No'],
+                    'voucher_type' => $entry['Voucher Type'],
+                    'party_name' => $entry['Party Name'],
+                    'address1' => $entry['Address 1'],
+                    'address2' => $entry['Address 2'],
+                    'state' => $stateCode,
+                    'country' => $entry['Country'],
+                    'gst_in' => $entry['GSTIN/UIN'],
+                    'gst_reg_type' => $entry['GST Registration Type'],
+                    'place_of_supply' => $entry['Place of Supply'],
+                    'company_reg_type' => $entry['Company State/ Registration Type'],
+                    'item_name' => $entry['Item Name'],
+                    'item_desc' => $entry['Item Description1'],
+                    'qty' => $entry['QTY'],
+                    'uom' => $entry['UOM'],
+                    'item_rate' => $entry['Item Rate'],
+                    'gst_rate' => $entry['GST Rate'],
+                    'taxable' => $entry['TAXABLE'],
+                    'sgst' => $entry['SGST'],
+                    'cgst' => $entry['CGST'],
+                    'igst' => $entry['IGST'],
+                    'cess' => $entry['CESS'],
+                    'discount' => $entry['DISCOUNT'],
+                    'inv_amt' => $entry['INVOICE AMOUNT'],
+                    'narration' => $entry['Narration'],
+                ]);
+            }
+
+            return redirect()->route('excelImport.purchase.show')->with('success', __('Purchase Data Save Successfully.'));
+        } else {
+            return redirect()->back()->with('error', 'Data validation failed.');
+        }
+    }
+
+    public function purchaseShow(SalePurchaseDataTable $dataTable)
+    {
+        return $dataTable->render('app.excelImport._purchase-show');
+    }
+
+    public function bankCreate()
+    {
+        return view('app.excelImport._bank-create');
+    }
+    public function bankImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file'
+        ]);
+
+        $file = $request->file('file');
+
+        $spreadsheet = IOFactory::load($file);
+
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        $dataArray = $worksheet->toArray(null, true, true, true);
+
+        $headings = array_shift($dataArray);
+
+        $records = [];
+
+        foreach ($dataArray as $row) {
+            $record = array_combine($headings, $row);
+            $records[] = $record;
+        }
+
+        $json_data = json_encode($records);
+
+        $json_file_path = storage_path('app/' . $file->getClientOriginalName() . '.json');
+        $jsonData = file_put_contents($json_file_path, $json_data);
+
+        $jsonData = file_get_contents(storage_path('app/' . $file->getClientOriginalName() . '.json'));
+        $data = json_decode($jsonData, true);
+
+        foreach ($data as $entry) {
+            Bank::create([
+                'trans_date' => $entry['Transaction Date'],
+                'trans_date' => Carbon::createFromFormat('d/m/Y', $entry['Transaction Date'])->toDateString(),
+                'voucher_no' => $entry['Voucher No'],
+                'cheque_no' => $entry['Cheque No'],
+                'description' => $entry['Description / Narration'],
+                'debit_amt' => $entry['Debit Amount'],
+                'credit_amt' => $entry['Credit Amount'],
+                'voucher_type' => $entry['Voucher Type'],
+                'ledger_name' => $entry['Ledger Name'],
+                'bank_name' => $entry['Bank Name'],
+                'instrument_date' => $entry['Instrument Date'],
+                'transection_type' => $entry['Transaction-type'],
+                'fav_name' => $entry['Favouring Name'],
+                'bank_date' => Carbon::createFromFormat('d/m/Y', $entry['Bank Date'])->toDateString(),
+            ]);
+
+        }
+
+        return redirect()->route('excelImport.bank.show')->with('success', __('Bank Data Save Successfully.'));
+
+    }
+
+    public function bankShow(BankDataTable $dataTable)
+    {
+        return $dataTable->render('app.excelImport._bank-show');
+    }
+
+    public function receiptCreate()
+    {
+        return view('app.excelImport._receipt-create');
+    }
+    public function receiptImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file'
+        ]);
+
+        $file = $request->file('file');
+
+        $spreadsheet = IOFactory::load($file);
+
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        $dataArray = $worksheet->toArray(null, true, true, true);
+
+        $headings = array_shift($dataArray);
+
+        $records = [];
+
+        foreach ($dataArray as $row) {
+            $record = array_combine($headings, $row);
+            $records[] = $record;
+        }
+
+        $json_data = json_encode($records);
+
+        $json_file_path = storage_path('app/' . $file->getClientOriginalName() . '.json');
+        $jsonData = file_put_contents($json_file_path, $json_data);
+
+        $jsonData = file_get_contents(storage_path('app/' . $file->getClientOriginalName() . '.json'));
+        $data = json_decode($jsonData, true);
+
+        foreach ($data as $entry) {
+            Bank::create([
+                'trans_date' => Carbon::createFromFormat('d/m/Y', $entry['Transaction Date'])->toDateString(),
+                'voucher_no' => $entry['Voucher No'],
+                'cheque_no' => $entry['Cheque No'],
+                'description' => $entry['Description / Narration'],
+                'debit_amt' => $entry['Debit Amount'],
+                'credit_amt' => $entry['Credit Amount'],
+                'voucher_type' => $entry['Voucher Type'],
+                'ledger_name' => $entry['Ledger Name'],
+                'bank_name' => $entry['Bank Name'],
+                'instrument_date' => $entry['Instrument Date'],
+                'transection_type' => $entry['Transaction-type'],
+                'fav_name' => $entry['Favouring Name'],
+                'bank_date' => Carbon::createFromFormat('d/m/Y', $entry['Bank Date'])->toDateString(),
+            ]);
+
+        }
+
+        return redirect()->route('excelImport.receipt.show')->with('success', __('Receipt Voucher Data Save Successfully.'));
+
+    }
+
+    public function receiptShow(BankDataTable $dataTable)
+    {
+        return $dataTable->render('app.excelImport._receipt-show');
+    }
+
+    public function paymentCreate()
+    {
+        return view('app.excelImport._payment-create');
+    }
+    public function paymentImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file'
+        ]);
+
+        $file = $request->file('file');
+
+        $spreadsheet = IOFactory::load($file);
+
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        $dataArray = $worksheet->toArray(null, true, true, true);
+
+        $headings = array_shift($dataArray);
+
+        $records = [];
+
+        foreach ($dataArray as $row) {
+            $record = array_combine($headings, $row);
+            $records[] = $record;
+        }
+
+        $json_data = json_encode($records);
+
+        $json_file_path = storage_path('app/' . $file->getClientOriginalName() . '.json');
+        $jsonData = file_put_contents($json_file_path, $json_data);
+
+        $jsonData = file_get_contents(storage_path('app/' . $file->getClientOriginalName() . '.json'));
+        $data = json_decode($jsonData, true);
+
+        foreach ($data as $entry) {
+            Bank::create([
+                'trans_date' => Carbon::createFromFormat('d/m/Y', $entry['Transaction Date'])->toDateString(),
+                'voucher_no' => $entry['Voucher No'],
+                'cheque_no' => $entry['Cheque No'],
+                'description' => $entry['Description / Narration'],
+                'debit_amt' => $entry['Debit Amount'],
+                'credit_amt' => $entry['Credit Amount'],
+                'voucher_type' => $entry['Voucher Type'],
+                'ledger_name' => $entry['Ledger Name'],
+                'bank_name' => $entry['Bank Name'],
+                'instrument_date' => $entry['Instrument Date'],
+                'transection_type' => $entry['Transaction-type'],
+                'fav_name' => $entry['Favouring Name'],
+                'bank_date' => Carbon::createFromFormat('d/m/Y', $entry['Bank Date'])->toDateString(),
+            ]);
+
+        }
+
+        return redirect()->route('excelImport.payment.show')->with('success', __('Payment Voucher Data Save Successfully.'));
+
+    }
+
+    public function paymentShow(BankDataTable $dataTable)
+    {
+        return $dataTable->render('app.excelImport._payment-show');
+    }
+
+    public function journalCreate()
+    {
+        return view('app.excelImport._journal-create');
+    }
+    public function journalImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file'
+        ]);
+
+        $file = $request->file('file');
+
+        $spreadsheet = IOFactory::load($file);
+
+        $worksheet = $spreadsheet->getActiveSheet();
+
+        $dataArray = $worksheet->toArray(null, true, true, true);
+
+        $headings = array_shift($dataArray);
+
+        $records = [];
+
+        foreach ($dataArray as $row) {
+            $record = array_combine($headings, $row);
+            $records[] = $record;
+        }
+
+        $json_data = json_encode($records);
+
+        $json_file_path = storage_path('app/' . $file->getClientOriginalName() . '.json');
+        $jsonData = file_put_contents($json_file_path, $json_data);
+
+        $jsonData = file_get_contents(storage_path('app/' . $file->getClientOriginalName() . '.json'));
+        $data = json_decode($jsonData, true);
+
+        foreach ($data as $entry) {
+            Bank::create([
+                'trans_date' => Carbon::createFromFormat('d/m/Y', $entry['Transaction Date'])->toDateString(),
+                'voucher_no' => $entry['Voucher Number'],
+                'voucher_type' => $entry['Voucher Type'],
+                'debit_amt' => $entry['Debit Amount'],
+                'credit_amt' => $entry['Credit Amount'],
+                'credit_ledgers' => $entry['Credit Ledgers'],
+                'debit_ledgers' => $entry['Debit Ledgers (Party Ledger)'],
+                'narration' => $entry['Narration'],
+            ]);
+
+        }
+
+        return redirect()->route('excelImport.journal.show')->with('success', __('Journal Voucher Data Save Successfully.'));
+
+    }
+
+    public function journalShow(JournalDataTable $dataTable)
+    {
+        return $dataTable->render('app.excelImport._journal-show');
+    }
 
 }

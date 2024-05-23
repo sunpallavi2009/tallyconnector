@@ -2,8 +2,9 @@
 
 namespace App\DataTables\App;
 
-use App\Facades\UtilityFacades;
+use Carbon\Carbon;
 use App\Models\Ecommerce;
+use App\Facades\UtilityFacades;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 
@@ -18,7 +19,7 @@ class EcommerceDataTable extends DataTable
                 return null; // Set checkbox column data to null for all rows
             })
             ->editColumn('created_at', function ($request) {
-                return UtilityFacades::date_time_format($request->created_at);
+                return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
             });
 
 //        $dataTable->filter(function ($query) {
@@ -27,7 +28,7 @@ class EcommerceDataTable extends DataTable
 //            }
 //        });
 
-        return $dataTable;
+        // return $dataTable;
     }
 
     public function query(Ecommerce $model)

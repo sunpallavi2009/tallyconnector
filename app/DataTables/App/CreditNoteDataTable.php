@@ -2,6 +2,7 @@
 
 namespace App\DataTables\App;
 
+use Carbon\Carbon;
 use App\Models\Ledger;
 use App\Facades\UtilityFacades;
 use Yajra\DataTables\Html\Column;
@@ -23,7 +24,7 @@ class CreditNoteDataTable extends DataTable
                 return view('admin.credit-note._action', compact('credits'));
             })
             ->editColumn('created_at', function ($request) {
-                return UtilityFacades::date_time_format($request->created_at);
+                return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
             })
 
             ->rawColumns(['action']);

@@ -2,8 +2,9 @@
 
 namespace App\DataTables\App;
 
-use App\Facades\UtilityFacades;
+use Carbon\Carbon;
 use App\Models\Bank;
+use App\Facades\UtilityFacades;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 
@@ -15,7 +16,7 @@ class BankStatementDataTable extends DataTable
             ->eloquent($query)
             ->addIndexColumn()
             ->editColumn('created_at', function ($request) {
-                return UtilityFacades::date_time_format($request->created_at);
+                return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
             })
             ->filter(function ($query) {
                 if (request()->has('voucher_type') && !empty(request()->voucher_type)) {

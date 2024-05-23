@@ -2,9 +2,10 @@
 
 namespace App\DataTables\App;
 
+use Carbon\Carbon;
 use App\Facades\UtilityFacades;
-use App\Models\SalePurchaseInvoice;
 use Yajra\DataTables\Html\Column;
+use App\Models\SalePurchaseInvoice;
 use Yajra\DataTables\Services\DataTable;
 
 class SaleDataTable extends DataTable
@@ -15,7 +16,7 @@ class SaleDataTable extends DataTable
             ->eloquent($query)
             ->addIndexColumn()
             ->editColumn('created_at', function ($request) {
-                return UtilityFacades::date_time_format($request->created_at);
+                return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
             });
 
 //        $dataTable->filter(function ($query) {
