@@ -125,6 +125,11 @@ Route::middleware([
         Route::get('gstr1/exp/show', [Gstr1Controller::class, 'expData'])->name('gstr1.exp');
         Route::get('gstr1/nil/show', [Gstr1Controller::class, 'nilData'])->name('gstr1.nil');
 
+        
+        Route::post('gstr1/connectToGST/getData', [Gstr1Controller::class, 'connectToGSTgetData'])->name('gstr1.connectToGST.getData');
+        Route::post('gstr1/connectToGST/otpRequest', [Gstr1Controller::class, 'otpRequest'])->name('gstr1.connectToGST.otpRequest');
+        Route::post('gstr1/connectToGST/otpVerify', [Gstr1Controller::class, 'otpVerify'])->name('gstr1.connectToGST.otpVerify');
+
 
         //  JET STREAM
         require __DIR__ . '/jetstream.php';

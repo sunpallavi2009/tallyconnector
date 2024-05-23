@@ -66,7 +66,7 @@
             </div>
         </div>
     </div>
-    {{-- @include('admin.gstr1.connectToGST._create'); --}}
+    @include('app.gstr1.connectToGST._create');
 @endsection
 @push('css')
     @include('layouts.includes.datatable-css')
@@ -76,7 +76,7 @@
     @include('layouts.includes.datatable-js')
     {{ $dataTable->scripts() }}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/js/bootstrap-select.min.js"></script>
-    {{-- <script>
+    <script>
         $(document).ready(function() {
             $('#request-otp-btn').click(function() {
                 $('#otp-request-fields').show(); // Show OTP input field
@@ -135,7 +135,7 @@
                 }
             });
         });
-    </script> --}}
+    </script>
 
     <script>
         $(document).ready(function () {
