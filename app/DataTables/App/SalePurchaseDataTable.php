@@ -10,6 +10,48 @@ use Yajra\DataTables\Services\DataTable;
 
 class SalePurchaseDataTable extends DataTable
 {
+    protected $states = [
+        '01' => 'JAMMU AND KASHMIR',
+        '02' => 'HIMACHAL PRADESH',
+        '03' => 'PUNJAB',
+        '04' => 'CHANDIGARH',
+        '05' => 'UTTARAKHAND',
+        '06' => 'HARYANA',
+        '07' => 'DELHI',
+        '08' => 'RAJASTHAN',
+        '09' => 'UTTAR PRADESH',
+        '10' => 'BIHAR',
+        '11' => 'SIKKIM',
+        '12' => 'ARUNACHAL PRADESH',
+        '13' => 'NAGALAND',
+        '14' => 'MANIPUR',
+        '15' => 'MIZORAM',
+        '16' => 'TRIPURA',
+        '17' => 'MEGHALAYA',
+        '18' => 'ASSAM',
+        '19' => 'WEST BENGAL',
+        '20' => 'JHARKHAND',
+        '21' => 'ODISHA',
+        '22' => 'CHATTISGARH',
+        '23' => 'MADHYA PRADESH',
+        '24' => 'GUJARAT',
+        '25' => 'CHATTISGARH',
+        '26' => 'DADRA AND NAGAR HAVELI AND DAMAN AND DIU (NEWLY MERGED UT)',
+        '27' => 'MAHARASHTRA',
+        '28' => 'ANDHRA PRADESH(BEFORE DIVISION)',
+        '29' => 'KARNATAKA',
+        '30' => 'GOA',
+        '31' => 'LAKSHADWEEP',
+        '32' => 'KERALA',
+        '33' => 'TAMIL NADU',
+        '34' => 'PUDUCHERRY',
+        '35' => 'ANDAMAN AND NICOBAR ISLANDS',
+        '36' => 'TELANGANA',
+        '37' => 'ANDHRA PRADESH (NEWLY ADDED)',
+        '97' => 'OTHER TERRITORY',
+        '99' => 'CENTRE JURISDICTION',
+    ];
+
     public function dataTable($query)
     {
         return datatables()
@@ -17,7 +59,184 @@ class SalePurchaseDataTable extends DataTable
             ->addIndexColumn()
             ->editColumn('created_at', function ($request) {
                 return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
-            });
+            })
+            ->addColumn('action', function (SalePurchaseInvoice $salespurchase) {
+                return view('app.excelImport._salespurchase-action', compact('salespurchase'));
+            })
+            ->editColumn('inv_date', function (SalePurchaseInvoice $salespurchase) {
+                $previousInvDate = $salespurchase->inv_date ?? 'NULL'; // Get the previous applicable date
+                $inputField = '<span class="editable-input">' . $previousInvDate . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="inv_date" value="' . $previousInvDate . '" data-id="' . $salespurchase->id . '" type="date">';
+                return $inputField;
+            })
+            ->editColumn('inv_no', function (SalePurchaseInvoice $salespurchase) {
+                $previousInvNo = $salespurchase->inv_no ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousInvNo . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="inv_no" value="' . $previousInvNo . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('bill_ref_no', function (SalePurchaseInvoice $salespurchase) {
+                $previousBillRefNo = $salespurchase->bill_ref_no ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousBillRefNo . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="bill_ref_no" value="' . $previousBillRefNo . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('voucher_type', function (SalePurchaseInvoice $salespurchase) {
+                $previousVoucherType = $salespurchase->voucher_type ?? 'NULL'; 
+                return '<select class="edit-vouchertype-select form-control" data-id="' . $salespurchase->id . '">' .
+                    '<option value="Sales" ' . ($previousVoucherType === "Sales" ? "selected" : "") . '>Sales</option>' .
+                    '<option value="Purchase" ' . ($previousVoucherType === "Purchase" ? "selected" : "") . '>Purchase</option>' .
+                    '</select>';
+            })
+            ->editColumn('party_name', function (SalePurchaseInvoice $salespurchase) {
+                $previousPartyName = $salespurchase->party_name ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousPartyName . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="party_name" value="' . $previousPartyName . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('address1', function (SalePurchaseInvoice $salespurchase) {
+                $previousAddress1 = $salespurchase->address1 ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousAddress1 . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="address1" value="' . $previousAddress1 . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('address2', function (SalePurchaseInvoice $salespurchase) {
+                $previousAddress2 = $salespurchase->address2 ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousAddress2 . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="address2" value="' . $previousAddress2 . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('state', function (SalePurchaseInvoice $salespurchase) {
+                $previousState = $salespurchase->state ?? 'NULL'; // Get the previous state or an empty string if null
+                $selectOptions = '';
+                foreach ($this->states as $code => $name) {
+                    $selected = ($code == $previousState) ? 'selected' : ''; // Check if the code matches the previous state
+                    $selectOptions .= '<option value="' . $code . '" ' . $selected . '>' . $name . '</option>';
+                }
+                $selectField = '<select class="edit--state-select form-control" name="state" data-id="' . $salespurchase->id . '">' . $selectOptions . '</select>';
+                return $selectField;
+            })
+            ->editColumn('country', function (SalePurchaseInvoice $salespurchase) {
+                $previousCountry = $salespurchase->country ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousCountry . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="country" value="' . $previousCountry . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('gst_in', function (SalePurchaseInvoice $salespurchase) {
+                $previousGstIn = $salespurchase->gst_in ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousGstIn . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="gst_in" value="' . $previousGstIn . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('gst_reg_type', function (SalePurchaseInvoice $salespurchase) {
+                $previousGstRegType = $salespurchase->gst_reg_type ?? 'NULL'; // Get the previous GST registration type
+                return '<select class="edit-select form-control" data-id="' . $salespurchase->id . '">' .
+                    '<option value="Regular" ' . ($previousGstRegType === "Regular" ? "selected" : "") . '>Regular</option>' .
+                    '<option value="Unregistered/Consumer" ' . ($previousGstRegType === "Unregistered/Consumer" ? "selected" : "") . '>Unregistered/Consumer</option>' .
+                    '</select>';
+            })
+            ->editColumn('place_of_supply', function (SalePurchaseInvoice $salespurchase) {
+                $previousPlaceOfSupply = $salespurchase->place_of_supply ?? 'NULL'; // Get the previous state or an empty string if null
+                $selectOptions = '';
+                foreach ($this->states as $code => $name) {
+                    $selected = ($code == $previousPlaceOfSupply) ? 'selected' : ''; // Check if the code matches the previous state
+                    $selectOptions .= '<option value="' . $code . '" ' . $selected . '>' . $name . '</option>';
+                }
+                $selectField = '<select class="edit--placeofsupply-select form-control" name="state" data-id="' . $salespurchase->id . '">' . $selectOptions . '</select>';
+                return $selectField;
+            })
+            ->editColumn('company_reg_type', function (SalePurchaseInvoice $salespurchase) {
+                $previousCompanyRegType = $salespurchase->company_reg_type ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousCompanyRegType . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="company_reg_type" value="' . $previousCompanyRegType . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('item_name', function (SalePurchaseInvoice $salespurchase) {
+                $previousItemName = $salespurchase->item_name ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousItemName . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="item_name" value="' . $previousItemName . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('item_desc', function (SalePurchaseInvoice $salespurchase) {
+                $previousItemDesc = $salespurchase->item_desc ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousItemDesc . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="item_desc" value="' . $previousItemDesc . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('qty', function (SalePurchaseInvoice $salespurchase) {
+                $previousQty = $salespurchase->qty ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousQty . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="qty" value="' . $previousQty . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('uom', function (SalePurchaseInvoice $salespurchase) {
+                $previousUom = $salespurchase->uom ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousUom . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="uom" value="' . $previousUom . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('item_rate', function (SalePurchaseInvoice $salespurchase) {
+                $previousItemRate = $salespurchase->item_rate ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousItemRate . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="item_rate" value="' . $previousItemRate . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('gst_rate', function (SalePurchaseInvoice $salespurchase) {
+                $previousGstName = $salespurchase->gst_rate ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousGstName . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="gst_rate" value="' . $previousGstName . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('taxable', function (SalePurchaseInvoice $salespurchase) {
+                $previousTaxable = $salespurchase->taxable ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousTaxable . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="taxable" value="' . $previousTaxable . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('sgst', function (SalePurchaseInvoice $salespurchase) {
+                $previousSgst = $salespurchase->sgst ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousSgst . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="sgst" value="' . $previousSgst . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('cgst', function (SalePurchaseInvoice $salespurchase) {
+                $previousCgst = $salespurchase->cgst ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousCgst . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="cgst" value="' . $previousCgst . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('igst', function (SalePurchaseInvoice $salespurchase) {
+                $previousIgst = $salespurchase->igst ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousIgst . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="igst" value="' . $previousIgst . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('cess', function (SalePurchaseInvoice $salespurchase) {
+                $previousCess = $salespurchase->cess ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousCess . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="cess" value="' . $previousCess . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('discount', function (SalePurchaseInvoice $salespurchase) {
+                $previousDiscount = $salespurchase->discount ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousDiscount . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="discount" value="' . $previousDiscount . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('inv_amt', function (SalePurchaseInvoice $salespurchase) {
+                $previousInvAmt = $salespurchase->inv_amt ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousInvAmt . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="inv_amt" value="' . $previousInvAmt . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('narration', function (SalePurchaseInvoice $salespurchase) {
+                $previousNarration = $salespurchase->narration ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousNarration . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="narration" value="' . $previousNarration . '" data-id="' . $salespurchase->id . '" type="text">';
+                return $inputField;
+            })
+
+            ->rawColumns(['action','inv_date','inv_no','bill_ref_no','voucher_type','party_name','address1','address2','state','country','gst_in','gst_reg_type','place_of_supply','company_reg_type','item_name','item_desc','qty','uom','item_rate','gst_rate','taxable','sgst','cgst','igst','cess','discount','inv_amt','narration']);
     }
 
     public function query(SalePurchaseInvoice $model)
@@ -134,6 +353,12 @@ class SalePurchaseDataTable extends DataTable
             Column::make('inv_amt')->title(__('invoice amount')),
             Column::make('tags')->title(__('Tags')),
             Column::make('created_at')->title(__('Created At')),
+            Column::computed('action')->title(__('Action'))
+                ->exportable(false)
+                ->printable(false)
+                ->width(60)
+                ->addClass('text-center')
+                ->width('20%'),
         ];
     }
 

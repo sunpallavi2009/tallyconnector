@@ -76,19 +76,19 @@
                             </a>
                         </li> --}}
 
-                        {{-- <li class="dash-item dash-hasmenu {{ request()->is('credit-note*') ? 'active' : '' }}">
+                        <li class="dash-item dash-hasmenu {{ request()->is('credit-note*') ? 'active' : '' }}">
                             <a class="dash-link" href="{{ route('credit-note.index') }}"><span class="dash-micon">
                                     <i class="ti ti-building-bank"></i></span>
                                 <span class="dash-mtext">{{ __('Credit Note') }}</span>
                             </a>
-                        </li> --}}
+                        </li> 
 
-                        {{-- <li class="dash-item dash-hasmenu {{ request()->is('debit-note*') ? 'active' : '' }}">
+                        <li class="dash-item dash-hasmenu {{ request()->is('debit-note*') ? 'active' : '' }}">
                             <a class="dash-link" href="{{ route('debit-note.index') }}"><span class="dash-micon">
                                     <i class="ti ti-building-bank"></i></span>
                                 <span class="dash-mtext">{{ __('Debit Note') }}</span>
                             </a>
-                        </li> --}}
+                        </li>
 
                         <li class="dash-item dash-hasmenu {{ request()->is('#*') ? 'active' : '' }}">
                             <a class="dash-link" href=""><span class="dash-micon">

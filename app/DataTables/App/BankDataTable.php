@@ -10,6 +10,18 @@ use Yajra\DataTables\Services\DataTable;
 
 class BankDataTable extends DataTable
 {
+    protected $transactionTypes = [
+        'ATM' => 'ATM',
+        'Card' => 'Card',
+        'Cash' => 'Cash',
+        'Cheque/DD' => 'Cheque/DD',
+        'ECS' => 'ECS',
+        'e-Fund Transfer' => 'e-Fund Transfer',
+        'Electronic Cheque' => 'Electronic Cheque',
+        'Electronic DD/PO' => 'Electronic DD/PO',
+        'Others' => 'Others',
+    ];
+
     public function dataTable($query)
     {
         return datatables()
@@ -17,7 +29,96 @@ class BankDataTable extends DataTable
             ->addIndexColumn()
             ->editColumn('created_at', function ($request) {
                 return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
-            });
+            })
+            ->addColumn('action', function (Bank $bankReceiptPayment) {
+                return view('app.excelImport._bankReceiptPayment-action', compact('bankReceiptPayment'));
+            })
+            ->editColumn('trans_date', function (Bank $bankReceiptPayment) {
+                $previousTransDate = $bankReceiptPayment->trans_date ?? 'NULL'; // Get the previous applicable date
+                $inputField = '<span class="editable-input">' . $previousTransDate . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="trans_date" value="' . $previousTransDate . '" data-id="' . $bankReceiptPayment->id . '" type="date">';
+                return $inputField;
+            })
+            ->editColumn('voucher_no', function (Bank $bankReceiptPayment) {
+                $previousVoucherNo = $bankReceiptPayment->voucher_no ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousVoucherNo . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="voucher_no" value="' . $previousVoucherNo . '" data-id="' . $bankReceiptPayment->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('cheque_no', function (Bank $bankReceiptPayment) {
+                $previousChequeNo = $bankReceiptPayment->cheque_no ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousChequeNo . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="cheque_no" value="' . $previousChequeNo . '" data-id="' . $bankReceiptPayment->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('description', function (Bank $bankReceiptPayment) {
+                $previousDescription = $bankReceiptPayment->description ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousDescription . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="description" value="' . $previousDescription . '" data-id="' . $bankReceiptPayment->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('debit_amt', function (Bank $bankReceiptPayment) {
+                $previousDebitAmt = $bankReceiptPayment->debit_amt ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousDebitAmt . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="debit_amt" value="' . $previousDebitAmt . '" data-id="' . $bankReceiptPayment->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('credit_amt', function (Bank $bankReceiptPayment) {
+                $previousCreditAmt = $bankReceiptPayment->credit_amt ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousCreditAmt . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="credit_amt" value="' . $previousCreditAmt . '" data-id="' . $bankReceiptPayment->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('voucher_type', function (Bank $bankReceiptPayment) {
+                $previousVoucherType = $bankReceiptPayment->voucher_type ?? 'NULL'; 
+                return '<select class="edit-vouchertype-select form-control" data-id="' . $bankReceiptPayment->id . '">' .
+                    '<option value="Receipt" ' . ($previousVoucherType === "Receipt" ? "selected" : "") . '>Receipt</option>' .
+                    '<option value="Payment" ' . ($previousVoucherType === "Payment" ? "selected" : "") . '>Payment</option>' .
+                    '<option value="Journal" ' . ($previousVoucherType === "Journal" ? "selected" : "") . '>Journal</option>' .
+                    '</select>';
+            })
+            ->editColumn('ledger_name', function (Bank $bankReceiptPayment) {
+                $previousLedgerName = $bankReceiptPayment->ledger_name ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousLedgerName . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="ledger_name" value="' . $previousLedgerName . '" data-id="' . $bankReceiptPayment->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('bank_name', function (Bank $bankReceiptPayment) {
+                $previousBankName = $bankReceiptPayment->bank_name ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousBankName . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="bank_name" value="' . $previousBankName . '" data-id="' . $bankReceiptPayment->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('instrument_date', function (Bank $bankReceiptPayment) {
+                $previousInstrumentDate = $bankReceiptPayment->instrument_date ?? 'NULL'; // Get the previous applicable date
+                $inputField = '<span class="editable-input">' . $previousInstrumentDate . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="instrument_date" value="' . $previousInstrumentDate . '" data-id="' . $bankReceiptPayment->id . '" type="date">';
+                return $inputField;
+            })
+            ->editColumn('transection_type', function (Bank $bankReceiptPayment) {
+                $previousTransectionType = $bankReceiptPayment->transection_type ?? 'NULL'; // Get the previous state or an empty string if null
+                $selectOptions = '';
+                foreach ($this->transactionTypes as $type) {
+                    $selected = ($type == $previousTransectionType) ? 'selected' : ''; // Check if the code matches the previous state
+                    $selectOptions .= '<option value="' . $type . '" ' . $selected . '>' . $type . '</option>';
+                }
+                $selectField = '<select class="edit-transectionType-select form-control" name="transection_type" data-id="' . $bankReceiptPayment->id . '">' . $selectOptions . '</select>';
+                return $selectField;
+            })
+            ->editColumn('fav_name', function (Bank $bankReceiptPayment) {
+                $previousFavName = $bankReceiptPayment->fav_name ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousFavName . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="fav_name" value="' . $previousFavName . '" data-id="' . $bankReceiptPayment->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('bank_date', function (Bank $bankReceiptPayment) {
+                $previousBankDate = $bankReceiptPayment->bank_date ?? 'NULL'; // Get the previous applicable date
+                $inputField = '<span class="editable-input">' . $previousBankDate . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="bank_date" value="' . $previousBankDate . '" data-id="' . $bankReceiptPayment->id . '" type="date">';
+                return $inputField;
+            })
+
+            ->rawColumns(['action','trans_date','voucher_no','cheque_no','description','debit_amt','credit_amt','voucher_type','ledger_name','bank_name','instrument_date','transection_type','fav_name','bank_date']);
     }
 
     public function query(Bank $model)
@@ -54,19 +155,6 @@ class BankDataTable extends DataTable
                              <'dataTable-bottom row'<'col-sm-5'i><'col-sm-7'p>>
                                ",
                 'buttons'   => [
-//                    ['extend' => 'create', 'className' => 'btn btn-light-primary no-corner me-1 add_module', 'action' => " function ( e, dt, node, config ) {
-//                        window.location = '" . route('faqs.create') . "';
-//                   }"],
-//                    [
-//                        'extend' => 'collection', 'className' => 'btn btn-light-secondary me-1 dropdown-toggle', 'text' => '<i class="ti ti-download"></i> Export', "buttons" => [
-//                        ["extend" => "print", "text" => '<i class="fas fa-print"></i> Print', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                        ["extend" => "csv", "text" => '<i class="fas fa-file-csv"></i> CSV', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                        ["extend" => "excel", "text" => '<i class="fas fa-file-excel"></i> Excel', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                        ["extend" => "pdf", "text" => '<i class="fas fa-file-pdf"></i> PDF', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                    ],
-//                    ],
-//                    ['extend' => 'reset', 'className' => 'btn btn-light-danger me-1'],
-//                    ['extend' => 'reload', 'className' => 'btn btn-light-warning'],
                 ],
                 "scrollX" => true,
                 "drawCallback" => 'function( settings ) {
@@ -89,13 +177,6 @@ class BankDataTable extends DataTable
                 }'
             ])->language([
                 'buttons' => [
-//                    'create' => __('Create'),
-//                    'export' => __('Export'),
-//                    'print' => __('Print'),
-//                    'reset' => __('Reset'),
-//                    'reload' => __('Reload'),
-//                    'excel' => __('Excel'),
-//                    'csv' => __('CSV'),
                 ]
             ]);
     }
@@ -119,6 +200,12 @@ class BankDataTable extends DataTable
             Column::make('bank_date')->title(__('Bank Date')),
             Column::make('tags')->title(__('Tags')),
             Column::make('created_at')->title(__('Created At')),
+            Column::computed('action')->title(__('Action'))
+                ->exportable(false)
+                ->printable(false)
+                ->width(60)
+                ->addClass('text-center')
+                ->width('20%'),
         ];
     }
 

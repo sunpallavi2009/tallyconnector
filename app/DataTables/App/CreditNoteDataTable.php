@@ -21,7 +21,7 @@ class CreditNoteDataTable extends DataTable
                 return null; // Set checkbox column data to null for all rows
             })
             ->addColumn('action', function (SalePurchaseInvoice $credits) {
-                return view('admin.credit-note._action', compact('credits'));
+                return view('app.credit-note._action', compact('credits'));
             })
             ->editColumn('created_at', function ($request) {
                 return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');

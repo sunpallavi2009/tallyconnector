@@ -17,7 +17,62 @@ class JournalDataTable extends DataTable
             ->addIndexColumn()
             ->editColumn('created_at', function ($request) {
                 return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
-            });
+            })
+            ->addColumn('action', function (Bank $bankReceiptPayment) {
+                return view('app.excelImport._bankReceiptPayment-action', compact('bankReceiptPayment'));
+            })
+            ->editColumn('trans_date', function (Bank $journal) {
+                $previousTransDate = $journal->trans_date ?? 'NULL'; // Get the previous applicable date
+                $inputField = '<span class="editable-input">' . $previousTransDate . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="trans_date" value="' . $previousTransDate . '" data-id="' . $journal->id . '" type="date">';
+                return $inputField;
+            })
+            ->editColumn('voucher_no', function (Bank $journal) {
+                $previousVoucherNo = $journal->voucher_no ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousVoucherNo . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="voucher_no" value="' . $previousVoucherNo . '" data-id="' . $journal->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('voucher_type', function (Bank $journal) {
+                $previousVoucherType = $journal->voucher_type ?? 'NULL'; 
+                return '<select class="edit-vouchertype-select form-control" data-id="' . $journal->id . '">' .
+                    '<option value="Receipt" ' . ($previousVoucherType === "Receipt" ? "selected" : "") . '>Receipt</option>' .
+                    '<option value="Payment" ' . ($previousVoucherType === "Payment" ? "selected" : "") . '>Payment</option>' .
+                    '<option value="Journal" ' . ($previousVoucherType === "Journal" ? "selected" : "") . '>Journal</option>' .
+                    '</select>';
+            })
+            ->editColumn('debit_amt', function (Bank $journal) {
+                $previousDebitAmt = $journal->debit_amt ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousDebitAmt . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="debit_amt" value="' . $previousDebitAmt . '" data-id="' . $journal->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('credit_amt', function (Bank $journal) {
+                $previousCreditAmt = $journal->credit_amt ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousCreditAmt . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="credit_amt" value="' . $previousCreditAmt . '" data-id="' . $journal->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('credit_ledgers', function (Bank $journal) {
+                $previousCreditLedgers = $journal->credit_ledgers ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousCreditLedgers . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="credit_ledgers" value="' . $previousCreditLedgers . '" data-id="' . $journal->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('debit_ledgers', function (Bank $journal) {
+                $previousDebitLedgers = $journal->debit_ledgers ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousDebitLedgers . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="debit_ledgers" value="' . $previousDebitLedgers . '" data-id="' . $journal->id . '" type="text">';
+                return $inputField;
+            })
+            ->editColumn('narration', function (Bank $journal) {
+                $previousNarration = $journal->narration ?? 'NULL'; // Get the previous party name
+                $inputField = '<span class="editable-input">' . $previousNarration . '</span>' .
+                    '<input class="edit-input bg-input-color d-none btn btn-outline-secondary" name="narration" value="' . $previousNarration . '" data-id="' . $journal->id . '" type="text">';
+                return $inputField;
+            })
+
+            ->rawColumns(['action','trans_date','voucher_no','voucher_type','debit_amt','credit_amt','credit_ledgers','debit_ledgers','narration']);
     }
 
     public function query(Bank $model)
@@ -54,19 +109,6 @@ class JournalDataTable extends DataTable
                              <'dataTable-bottom row'<'col-sm-5'i><'col-sm-7'p>>
                                ",
                 'buttons'   => [
-//                    ['extend' => 'create', 'className' => 'btn btn-light-primary no-corner me-1 add_module', 'action' => " function ( e, dt, node, config ) {
-//                        window.location = '" . route('faqs.create') . "';
-//                   }"],
-//                    [
-//                        'extend' => 'collection', 'className' => 'btn btn-light-secondary me-1 dropdown-toggle', 'text' => '<i class="ti ti-download"></i> Export', "buttons" => [
-//                        ["extend" => "print", "text" => '<i class="fas fa-print"></i> Print', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                        ["extend" => "csv", "text" => '<i class="fas fa-file-csv"></i> CSV', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                        ["extend" => "excel", "text" => '<i class="fas fa-file-excel"></i> Excel', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                        ["extend" => "pdf", "text" => '<i class="fas fa-file-pdf"></i> PDF', "className" => "btn btn-light text-primary dropdown-item", "exportOptions" => ["columns" => [0, 1, 3]]],
-//                    ],
-//                    ],
-//                    ['extend' => 'reset', 'className' => 'btn btn-light-danger me-1'],
-//                    ['extend' => 'reload', 'className' => 'btn btn-light-warning'],
                 ],
                 "scrollX" => true,
                 "drawCallback" => 'function( settings ) {
@@ -89,13 +131,6 @@ class JournalDataTable extends DataTable
                 }'
             ])->language([
                 'buttons' => [
-//                    'create' => __('Create'),
-//                    'export' => __('Export'),
-//                    'print' => __('Print'),
-//                    'reset' => __('Reset'),
-//                    'reload' => __('Reload'),
-//                    'excel' => __('Excel'),
-//                    'csv' => __('CSV'),
                 ]
             ]);
     }
@@ -114,6 +149,12 @@ class JournalDataTable extends DataTable
             Column::make('narration')->title(__('Narration')),
             Column::make('tags')->title(__('Tags')),
             Column::make('created_at')->title(__('Created At')),
+            Column::computed('action')->title(__('Action'))
+                ->exportable(false)
+                ->printable(false)
+                ->width(60)
+                ->addClass('text-center')
+                ->width('20%'),
         ];
     }
 

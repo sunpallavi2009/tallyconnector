@@ -6,11 +6,13 @@ use App\Models\User;
 use Laravel\Jetstream\Jetstream;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TenantHomeController;
 use App\Http\Controllers\App\Gstr1Controller;
+use App\Http\Controllers\TenantHomeController;
 use App\Http\Controllers\App\CompanyController;
 use App\Http\Controllers\App\JsonImportController;
+use App\Http\Controllers\App\DebitNoteController;
 use App\Http\Controllers\App\ExcelImportController;
+use App\Http\Controllers\App\CreditNoteController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use Laravel\Jetstream\Http\Controllers\CurrentTeamController;
@@ -78,10 +80,15 @@ Route::middleware([
         Route::get('excelImport/items/create', [ExcelImportController::class, 'itemCreate'])->name('excelImport.items.create');
         Route::post('excelImport/items/import', [ExcelImportController::class,'itemImport'])->name('excelImport.items.import');
         Route::get('excelImport/items/show', [ExcelImportController::class,'itemShow'])->name('excelImport.items.show');
+        Route::delete('excelImport/items/destroy/{id}', [ExcelImportController::class,'itemDestroy'])->name('excelImport.items.destroy');
+        Route::post('excelImport/items/{id}', [ExcelImportController::class, 'itemInputStore'])->name('items.input.store');
     
         Route::get('excelImport/sales/create', [ExcelImportController::class, 'saleCreate'])->name('excelImport.sales.create');
         Route::post('excelImport/sales/import', [ExcelImportController::class,'saleImport'])->name('excelImport.sales.import');
         Route::get('excelImport/sales/show', [ExcelImportController::class,'saleShow'])->name('excelImport.sales.show');
+
+        Route::post('excelImport/salespurchase/{id}', [ExcelImportController::class, 'salespurchaseInputStore'])->name('salespurchase.input.store');
+        Route::delete('excelImport/salespurchase/destroy/{id}', [ExcelImportController::class,'salespurchaseDestroy'])->name('excelImport.salespurchase.destroy');
     
         Route::get('excelImport/purchase/create', [ExcelImportController::class, 'purchaseCreate'])->name('excelImport.purchase.create');
         Route::post('excelImport/purchase/import', [ExcelImportController::class,'purchaseImport'])->name('excelImport.purchase.import');
@@ -99,10 +106,14 @@ Route::middleware([
         Route::post('excelImport/payment/import', [ExcelImportController::class,'paymentImport'])->name('excelImport.payment.import');
         Route::get('excelImport/payment/show', [ExcelImportController::class,'paymentShow'])->name('excelImport.payment.show');
     
+        Route::post('excelImport/bankReceiptPayment/{id}', [ExcelImportController::class, 'bankReceiptPaymentInputStore'])->name('bankReceiptPayment.input.store');
+        Route::delete('excelImport/bankReceiptPayment/destroy/{id}', [ExcelImportController::class,'bankReceiptPaymentDestroy'])->name('excelImport.bankReceiptPayment.destroy');
+    
         Route::get('excelImport/journal/create', [ExcelImportController::class, 'journalCreate'])->name('excelImport.journal.create');
         Route::post('excelImport/journal/import', [ExcelImportController::class,'journalImport'])->name('excelImport.journal.import');
         Route::get('excelImport/journal/show', [ExcelImportController::class,'journalShow'])->name('excelImport.journal.show');
-    
+        Route::post('excelImport/journal/{id}', [ExcelImportController::class, 'journalInputStore'])->name('journal.input.store');
+       
         //jsonImport
         Route::resource('jsonImport', JsonImportController::class);
         Route::get('jsonImport/items/show', [JsonImportController::class,'itemShow'])->name('jsonImport.items.show');
@@ -130,6 +141,16 @@ Route::middleware([
         Route::post('gstr1/connectToGST/otpRequest', [Gstr1Controller::class, 'otpRequest'])->name('gstr1.connectToGST.otpRequest');
         Route::post('gstr1/connectToGST/otpVerify', [Gstr1Controller::class, 'otpVerify'])->name('gstr1.connectToGST.otpVerify');
 
+        //note
+        Route::resource('credit-note', CreditNoteController::class);
+        Route::post('credit-note/import', [CreditNoteController::class, 'creditNoteImport'])->name('credit-note.import');
+        Route::get('credit-note/data/show', [CreditNoteController::class, 'creditNoteShow'])->name('credit-note.show');
+        Route::delete('credit-note/destroy/{id}', [CreditNoteController::class,'creditNoteDestroy'])->name('credit-note.destroy');
+        Route::resource('debit-note', DebitNoteController::class);
+        Route::post('debit-note/import', [DebitNoteController::class, 'debitNoteImport'])->name('debit-note.import');
+        Route::get('debit-note/data/show', [DebitNoteController::class, 'debitNoteShow'])->name('debit-note.show');
+        Route::delete('debit-note/destroy/{id}', [DebitNoteController::class,'debitNoteDestroy'])->name('debit-note.destroy');
+        
 
         //  JET STREAM
         require __DIR__ . '/jetstream.php';
