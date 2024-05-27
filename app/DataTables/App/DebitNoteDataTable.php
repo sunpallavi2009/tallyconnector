@@ -19,7 +19,7 @@ class DebitNoteDataTable extends DataTable
                 return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
             })
             ->addColumn('action', function (SalePurchaseInvoice $debits) {
-                return view('admin.debit-note._action', compact('debits'));
+                return view('app.debit-note._action', compact('debits'));
             })
 
             ->rawColumns(['action']);

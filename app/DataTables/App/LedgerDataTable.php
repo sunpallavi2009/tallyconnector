@@ -169,7 +169,14 @@ class LedgerDataTable extends DataTable
 
     public function query(Ledger $model)
     {
-        return $model->newQuery()->latest();
+        // return $model->newQuery()->latest();
+
+        $query = $model->newQuery()->latest();
+
+        if(request()->has('start_date') && request()->has('end_date')) {
+            $query->whereBetween('applicable_date', [request('start_date'), request('end_date')]);
+        }
+        return $query;
     }
 
     public function html()

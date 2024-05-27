@@ -26,12 +26,18 @@
                                 aria-labelledby="landing-apps-setting">
                                 <div class="card-header">
                                     <div class="row">
-                                        <div class="col-lg-8 d-flex align-items-center">
+                                        <div class="col-lg-4 d-flex align-items-center">
                                             <h5 class="mb-0">{{ __('Ledger Master Data') }}</h5>
                                         </div>
-                                        <div class="col-lg-4 d-flex justify-content-end">
-                                            <div class="d-inline-block">
-                                                @include('app.jsonImport._switch')   
+                                        <div class="col-lg-8 d-flex justify-content-end">
+                                            <div class="col-lg-3 mt-4">
+                                                <div class="d-inline-block">
+                                                        @include('app.jsonImport._switch')   
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <label for="date-filter">{{ __('Date Range:') }}</label>
+                                                <input type="text" id="date-filter" class="form-control">
                                             </div>
                                         </div>
                                     </div>
@@ -54,12 +60,41 @@
 
 @push('css')
     @include('layouts.includes.datatable-css')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
 @endpush
 @push('javascript')
     @include('layouts.includes.datatable-js')
     {{ $dataTable->scripts() }}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/moment/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // $('#voucher-type-filter').change(function () {
+            //     var voucherType = $(this).val();
+            //     window.LaravelDataTables["sale-table"].column('voucher_type:name').search(voucherType).draw();
+            // });
+
+            $('#date-filter').daterangepicker({
+                autoUpdateInput: false,
+                locale: {
+                    cancelLabel: 'Clear',
+                    format: 'YYYY-MM-DD'
+                }
+            });
+
+            $('#date-filter').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+                window.LaravelDataTables["ledger-table"].ajax.url('/ledgers?start_date=' + picker.startDate.format('YYYY-MM-DD') + '&end_date=' + picker.endDate.format('YYYY-MM-DD')).load();
+            });
+
+            $('#date-filter').on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+                window.LaravelDataTables["ledger-table"].ajax.url('/ledgers').load();
+            });
+        });
+    </script>
     <script>
         $(document).ready(function () {
             var dataTable = $('#ledger-table').DataTable();
