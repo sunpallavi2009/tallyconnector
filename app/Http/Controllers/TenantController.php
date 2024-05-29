@@ -30,7 +30,7 @@ class TenantController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
             'domain_name' => ['required', 'string', 'alpha', 'between:4,10', 'max:255', 'unique:domains,domain'],
-            // 'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         try {
@@ -71,7 +71,7 @@ class TenantController extends Controller
             $user = User::create([
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
-                // 'password' => Hash::make($validatedData['password']),
+                'password' => Hash::make($validatedData['password']),
                 'remember_token' => Str::random(60),
             ]);
 

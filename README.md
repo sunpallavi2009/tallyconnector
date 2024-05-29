@@ -22,4 +22,9 @@ User: irriion
 Database: tenant_b07b0971-f830-4ee1-91d8-570ff0760278
 
 on those two datatable has same user and password
-and changes on .env files and tenancy or other domain changes in code
+and changes on .env(sample-.env.serverexample) files and tenancy or other domain changes in code
+
+in local Imporsonate server error
+http://pristm.preciseca.com:8000/
+
+changes on _impersonate.blade.php
