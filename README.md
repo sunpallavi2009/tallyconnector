@@ -28,3 +28,10 @@ in local Imporsonate server error
 http://pristm.preciseca.com:8000/
 
 changes on _impersonate.blade.php
+
+This command will forcefully remove the .trash directory and all its contents, including any files or subdirectories it contains. Be cautious when using the -rf flags, as they can cause irreversible data loss if used incorrectly.
+
+After removing the .trash directory, it will be permanently deleted from your server. Make sure that you don't need any files or data stored within this directory before proceeding with the deletion.
+
+rm -rf /home/preciseca/.trash
+rm -rf /home/preciseca/public_html/laraveltenanttallyconnector/.git
