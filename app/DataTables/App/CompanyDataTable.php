@@ -60,7 +60,7 @@ class CompanyDataTable extends DataTable
                 return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
             })
             ->addColumn('action', function (Company $companies) {
-                return view('app.company.action', compact('companies'));
+                return view('app.company._action', compact('companies'));
             })
             ->addColumn('state', function (Company $companies) {
                 return array_search($companies->state, $this->states);

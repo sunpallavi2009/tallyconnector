@@ -21,11 +21,14 @@ class TenantDataTable extends DataTable
                 return Carbon::parse($request->created_at)->format('Y-m-d H:i:s');
             })
             
+            ->addColumn('impersonate', function (Tenant $tenant) {
+                return view('tenants._impersonate', compact('tenant'));
+            })
             ->addColumn('action', function (Tenant $tenant) {
-                return view('tenants.impersonate', compact('tenant'));
+                return view('tenants._action', compact('tenant'));
             })
 
-            ->rawColumns(['action']);
+            ->rawColumns(['impersonate','action']);
     }
 
     public function query(Tenant $model)
@@ -107,8 +110,14 @@ class TenantDataTable extends DataTable
             Column::make('name')->title(__('Name')),
             Column::make('email')->title(__('Email')),
             // Column::make('status')->title(__('Status')),
-            Column::make('domain')->title(__('DOMAIN NAME'))->searchable(false),
-            Column::computed('action')->title(__('DOMAIN LINK'))
+            Column::make('domain')->title(__('DOMAIN NAME'))->searchable(false), 
+            Column::computed('action')->title(__('Action'))
+            ->exportable(false)
+            ->printable(false)
+            ->width(60)
+            ->addClass('text-center')
+            ->width('20%'),
+            Column::computed('impersonate')->title(__('DOMAIN LINK'))
                 ->exportable(false)
                 ->printable(false)
                 ->width(60)

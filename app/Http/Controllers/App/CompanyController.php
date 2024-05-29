@@ -62,7 +62,7 @@ class CompanyController extends Controller
     {
             $states = $this->states;
             $authToken = Auth::user()->remember_token;
-            return view('app.company.create', compact('states','authToken'));
+            return view('app.company._create', compact('states','authToken'));
     }
 
     public function store(Request $request)
@@ -90,7 +90,7 @@ class CompanyController extends Controller
     {
             $states = $this->states;
             $company    = Company::find($id);
-            return view('app.company.edit', compact('company','states'));
+            return view('app.company._edit', compact('company','states'));
 
     }
 

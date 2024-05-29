@@ -40,7 +40,7 @@
                             {!! Form::text('domain_name', null, ['class' => 'form-control', ' required', 'placeholder' => __('Enter Domain Name')]) !!}
                         </div>
 
-                        <div class="form-group mb-3">
+                        {{-- <div class="form-group mb-3">
                             <label class="form-label">{{ __('Password') }}</label>
                             <input id="password" type="password" class="form-control pwstrength" data-indicator="pwindicator"
                                 name="password" placeholder="{{ __('Enter password') }}" required>
@@ -50,7 +50,7 @@
                             <label class="form-label">{{ __('Password Confirmation') }}</label>
                             <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required
                                 autocomplete="new-password" placeholder="{{ __('Enter password confirmation') }}">
-                        </div>
+                        </div> --}}
                         
                         
                     </div>
