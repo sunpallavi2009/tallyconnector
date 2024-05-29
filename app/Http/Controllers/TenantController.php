@@ -129,8 +129,16 @@ class TenantController extends Controller
                     $user->password = Hash::make($request->password);
                     $user->remember_token = Str::random(60);
                 }
-                $user->save();
+            } else {
+                // Create a new user if not found
+                $user = User::create([
+                    'name' => $validatedData['name'],
+                    'email' => $validatedData['email'],
+                    'password' => $request->filled('password') ? Hash::make($request->password) : $tenant->password,
+                    'remember_token' => Str::random(60),
+                ]);
             }
+            $user->save();
 
             // Save the tenant
             $tenant->save();
@@ -143,6 +151,55 @@ class TenantController extends Controller
             return redirect()->back()->withInput()->with('error', __('An error occurred: ') . $e->getMessage());
         }
     }
+
+
+    // public function update(Request $request, $id)
+    // {
+    //     $validatedData = $request->validate([
+    //         'name' => ['required', 'string', 'max:255'],
+    //         'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
+    //         // 'domain_name' => ['required', 'string', 'alpha', 'between:4,10', 'max:255', 'unique:domains,domain'],
+    //         // 'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+    //     ]);
+
+    //     try {
+    //         $tenant = Tenant::findOrFail($id);
+
+    //         tenancy()->initialize($tenant);
+
+    //         $tenant->name = $validatedData['name'];
+    //         $tenant->email = $validatedData['email'];
+    //         // $tenant->domain_name = $validatedData['domain_name'];
+
+    //         // Optionally update the password if provided
+    //         if ($request->filled('password')) {
+    //             $tenant->password = Hash::make($request->password);
+    //         }
+
+    //         // Find the associated user and update their information
+    //         $user = User::where('email', $tenant->email)->first();
+
+    //         if ($user) {
+    //             $user->name = $validatedData['name'];
+    //             $user->email = $validatedData['email'];
+    //             if ($request->filled('password')) {
+    //                 $user->password = Hash::make($request->password);
+    //                 $user->remember_token = Str::random(60);
+    //             }
+    //             $user->save();
+    //         }
+
+    //         // Save the tenant
+    //         $tenant->save();
+
+    //         // Release the tenant context
+    //         tenancy()->end();
+
+    //         return redirect()->route('tenants.index')->with('success', __('Tenant updated successfully.'));
+    //     } catch (\Exception $e) {
+    //         return redirect()->back()->withInput()->with('error', __('An error occurred: ') . $e->getMessage());
+    //     }
+    // }
 
     public function destroy($id)
     {

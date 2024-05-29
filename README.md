@@ -17,17 +17,18 @@ in cpanal tenant workable steps
 User: irriion
 Database: irriion
 
-
 User: irriion
 Database: tenant_b07b0971-f830-4ee1-91d8-570ff0760278
 
 on those two datatable has same user and password
+
 and changes on .env(sample-.env.serverexample) files and tenancy or other domain changes in code
 
 in local Imporsonate server error
 http://pristm.preciseca.com:8000/
 
 changes on _impersonate.blade.php
+and changes on main db domain table subdomain name and in tenant db users record fill
 
 This command will forcefully remove the .trash directory and all its contents, including any files or subdirectories it contains. Be cautious when using the -rf flags, as they can cause irreversible data loss if used incorrectly.
 
