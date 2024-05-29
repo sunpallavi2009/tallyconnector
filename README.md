@@ -11,4 +11,15 @@
 * Change `APP_URL` to `http://central.test`in `.env`
 * Run `php artisan db:Seed --class=TenantSeeder`
 
+in cpanal tenant workable steps 
+2}=DPm=P23t}
 
+User: irriion
+Database: irriion
+
+
+User: irriion
+Database: tenant_b07b0971-f830-4ee1-91d8-570ff0760278
+
+on those two datatable has same user and password
+and changes on .env files and tenancy or other domain changes in code
