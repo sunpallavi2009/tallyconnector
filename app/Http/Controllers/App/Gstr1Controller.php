@@ -34,17 +34,20 @@ class Gstr1Controller extends Controller
             'gst_username' => 'aagfi0474g1',
             'state_cd' => '27',
             'ip_address' => '$this->IP_ADDRESS',
-            'txn' => '473675e563cf441d83c8e1720a8f8972',
+            'txn' => 'e0067f9c60024100a72ba3d60e7d9efa',
             'retperiod' => '012024',
         ];
         $response = $this->doRequest('gstr1',['query' => $params,'headers' => $headers]);
         $data = $response->getBody()->getContents();
+        //return $data;
         $jsonData = json_decode($data, true);
+        //dd( $jsonData);
         // Add the transaction ID to the JSON data
         $txnId = $jsonData['header']['txn'] ?? null;
         $jsonData['txnId'] = $txnId;
-    // Log the value of $txnId
-Log::info('Transaction ID: '.$txnId);
+        //dd( $jsonData);
+        // Log the value of $txnId
+        Log::info('Transaction ID: '.$txnId);
 
         //***gstAuth Data***
     

@@ -73,6 +73,7 @@ class JsonImportController extends Controller
 
     public function ledgerJsonImport(Request $request, $token_id, $company_id)
     {
+        // $tenantId = $request->header('Tenant-ID');
         try {
             $jsonData = $request->getContent();
             $data = json_decode($jsonData, true);
@@ -84,12 +85,6 @@ class JsonImportController extends Controller
             // Validate the type
             if (!isset($data['type']) || $data['type'] !== 'ledger') {
                 return response()->json(['error' => 'Invalid type. Only ledger data is allowed.'], 400);
-            }
-
-            // Validate the token_id and company_id against the Company model
-            $company = Company::where('id', $company_id)->where('token_id', $token_id)->first();
-            if (!$company) {
-                return response()->json(['error' => 'Invalid token_id or company_id.'], 400);
             }
 
             // Extract ledger entries
@@ -185,6 +180,121 @@ class JsonImportController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    // public function ledgerJsonImport(Request $request, $token_id, $company_id)
+    // {
+    //     try {
+    //         $jsonData = $request->getContent();
+    //         $data = json_decode($jsonData, true);
+
+    //         if (!$data) {
+    //             return response()->json(['error' => 'Invalid JSON data.'], 400);
+    //         }
+
+    //         // Validate the type
+    //         if (!isset($data['type']) || $data['type'] !== 'ledger') {
+    //             return response()->json(['error' => 'Invalid type. Only ledger data is allowed.'], 400);
+    //         }
+
+    //         // Validate the token_id and company_id against the Company model
+    //         $company = Company::where('id', $company_id)->where('token_id', $token_id)->first();
+    //         if (!$company) {
+    //             return response()->json(['error' => 'Invalid token_id or company_id.'], 400);
+    //         }
+
+    //         // Extract ledger entries
+    //         $ledgerEntries = $data['ledgers'] ?? null;
+    //         if (!$ledgerEntries) {
+    //             return response()->json(['error' => 'No ledger data found.'], 400);
+    //         }
+
+    //         $existingPartyNames = Ledger::pluck('party_name')->toArray();
+    //         foreach ($ledgerEntries as $entry) {
+
+    //             $tags = 'Tally'; 
+                
+    //             $partyName = trim($entry['Party Name']);
+
+    //             if ($partyName === '') {
+    //                 return response()->json(['error' => 'Party Name is required.'], 400);
+    //             }
+
+    //             if ($entry['Party Name'] !== $partyName) {
+    //                 return response()->json(['error' => 'Remove spaces at the beginning and end of the party name.'], 400);
+    //             }
+
+    //             if (in_array($partyName, $existingPartyNames)) {
+    //                 return response()->json(['error' => 'Party Name "' . $partyName . '" already exists.'], 400);
+    //             }
+
+    //             $groupName = trim($entry['Group Name']);
+
+    //             if ($groupName === '') {
+    //                 return response()->json(['error' => 'Group Name is required.'], 400);
+    //             }
+
+    //             if ($entry['Group Name'] !== $groupName) {
+    //                 return response()->json(['error' => 'Remove spaces at the beginning and end of the group name.'], 400);
+    //             }
+
+    //             if (empty($entry['Applicable Date'])) {
+    //                 return response()->json(['error' => 'Applicable Date is required.'], 400);
+    //             }
+
+    //             try {
+    //                 $applicableDate = Carbon::createFromFormat('d/m/Y', $entry['Applicable Date']);
+    //             } catch (\Exception $e) {
+    //                 return response()->json(['error' => 'Invalid date format. Date must be in DD/MM/YYYY format.'], 400);
+    //             }
+
+    //             if (empty($entry['GST Registration Type'])) {
+    //                 return response()->json(['error' => 'GST Registration Type is required.'], 400);
+    //             }
+
+    //             if (empty($entry['GSTIN/UIN'])) {
+    //                 return response()->json(['error' => 'GSTIN/UIN is required.'], 400);
+    //             }
+
+    //             if (!preg_match("/^([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]){1}?$/", $entry['GSTIN/UIN'])) {
+    //                 return response()->json(['error' => 'Invalid GSTIN/UIN format.'], 400);
+    //             }
+
+    //             $stateCode = array_search(strtoupper($entry['State']), array_map('strtoupper', $this->states));
+    //             if ($stateCode === false) {
+    //                 return response()->json(['error' => 'Invalid state code.'], 400);
+    //             }
+
+    //             $newData = Ledger::create([
+    //                 'party_name' => $partyName,
+    //                 'alias' => $entry['Alias'],
+    //                 'group_name' => $groupName,
+    //                 'credit_period' => $entry['Credit Period'],
+    //                 'buyer_name' => $entry['Buyer/Mailing Name'],
+    //                 'address1' => $entry['Address 1'],
+    //                 'address2' => $entry['Address 2'],
+    //                 'address3' => $entry['Address 3'],
+    //                 'country' => $entry['Country'],
+    //                 'state' => $stateCode, // Save state code instead of state name
+    //                 'pincode' => $entry['Pincode'],
+    //                 'gst_in' => $entry['GSTIN/UIN'],
+    //                 'gst_reg_type' => $entry['GST Registration Type'],
+    //                 'opening_balance' => $entry['Opening Balance DR/CR'],
+    //                 'applicable_date' => $applicableDate->toDateString(),
+    //                 'tags' => $tags
+    //             ]);
+
+    //             if (!$newData) {
+    //                 throw new \Exception('Failed to create data record.');
+    //             }
+    //         }
+
+    //         return response()->json(['message' => 'Ledger data saved successfully.']);
+
+    //     } catch (\Exception $e) {
+    //         Log::error('Error importing data: ' . $e->getMessage());
+    //         return response()->json(['error' => $e->getMessage()], 500);
+    //     }
+    // }
 
     // public function ledgerJsonImport(Request $request)
     // {

@@ -14,6 +14,8 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 {
     use HasFactory, HasDatabase, HasDomains,CentralConnection;
 
+    // protected $connection = 'main'; // Adjust if needed
+
     public const CONNECTION = 'tenant';
 
     
@@ -36,5 +38,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     {
         return $this->hasMany(Domain::class);
     }
+
+    
 
 }
