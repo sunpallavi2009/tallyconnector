@@ -1,4 +1,3 @@
-<!-- Modal -->
 <div class="modal fade" id="connect_to_GST" tabindex="-1" aria-labelledby="connect_to_GSTLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -9,6 +8,7 @@
             {!! Form::open([
                 'route' => 'gstr1.connectToGST.otpRequest',
                 'method' => 'Post',
+                'id' => 'otp-request-form',
                 'data-validate',
             ]) !!}
             <div class="modal-body">
@@ -20,7 +20,7 @@
                 </div>
 
                 <div class="form-group">
-                    {{ Form::label('company', __('Company	'), ['class' => 'form-label']) }}
+                    {{ Form::label('company', __('Company'), ['class' => 'form-label']) }}
                     <select name="company" id="company" class="form-control">
                         <option value="">Select Company</option>
                         @foreach($companies as $company)
@@ -32,20 +32,25 @@
                 <div id="companyDetails" style="display: none;">
                     {{-- Company details will be shown here --}}
                 </div>
-
+            </div>
+            <div class="modal-footer">
+                {{ Form::button(__('Request OTP'), ['type' => 'button', 'id' => 'request-otp-btn', 'class' => 'btn btn-primary']) }}
+            </div>
+            
+            
+            <div class="modal-body">
                 <div id="otp-request-fields" style="display: none;">
                     <div class="form-group" id="otp-input-container">
-                        {{ Form::label('otp', __('OTP'), ['class' => 'form-label']) }}
+                        {{ Form::label('otp', __('OTP Verify'), ['class' => 'form-label']) }}
                         <input type="text" name="otp" id="otpInput" class="form-control" placeholder="Enter OTP">
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                {{ Form::button(__('Request OTP'), ['type' => 'submit', 'id' => 'request-otp-btn', 'class' => 'btn btn-primary']) }}
-                {{ Form::button(__('Verify OTP'), ['type' => 'submit', 'id' => 'verify-otp-btn', 'class' => 'btn btn-primary', 'style' => 'display:none;']) }}
-            </div>
+                
             {!! Form::close() !!}
+            <div class="modal-footer" style="display: none;" id="verify-otp-footer">
+                {{ Form::button(__('Verify OTP'), ['type' => 'button', 'id' => 'verify-otp-btn', 'class' => 'btn btn-primary']) }}
+            </div>
         </div>
     </div>
 </div>
-

@@ -35,6 +35,10 @@
                                 <div class="row">
                                     <div class="col-lg-8 d-flex align-items-center">
                                         <h5 class="mb-0">{{ __('Sales Invoice Summary Data') }}</h5>
+                                        @if(isset($txnId))
+                                        <p>Transaction ID: {{ $txnId }}</p>
+                                    @endif
+
                                     </div>
                                     <div class="col-lg-4 col-md-4 col-sm-4 d-flex justify-content-end">
                                         <button type="button" class="btn btn-primary mx-1" data-bs-toggle="modal" data-bs-target="#connect_to_GST">
@@ -71,6 +75,8 @@
         </div>
     </div>
     @include('app.gstr1.connectToGST._create');
+  
+
 @endsection
 @push('css')
     @include('layouts.includes.datatable-css')
@@ -79,35 +85,71 @@
 @push('javascript')
     @include('layouts.includes.datatable-js')
     {{ $dataTable->scripts() }}
+    <!-- Correct usage for including jQuery -->
+{{-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> --}}
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/js/bootstrap-select.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#request-otp-btn').click(function() {
-                $('#otp-request-fields').show(); // Show OTP input field
-                $(this).prop('disabled', true); // Disable the "Request OTP" button
-                $('#verify-otp-btn').show();
-                $('#request-otp-btn').hide();
-                // Enable the "Verify OTP" button
-            });
-            $('#verify-otp-btn').click(function() {
-                var otp = $('#otpInput').val();
-                // Make an AJAX request to verify the OTP
+            $('#request-otp-btn').click(function(event) {
+                event.preventDefault(); // Prevent default form submission
+    
+                var form = $('#otp-request-form');
                 $.ajax({
-                    url: '{{ route('gstr1.connectToGST.otpVerify') }}',
-                    method: 'POST',
-                    data: { otp: otp },
+                    url: form.attr('action'),
+                    method: form.attr('method'),
+                    data: form.serialize(),
                     success: function(response) {
-                        // Handle success response
-                        console.log(response);
-                        // Redirect or perform other actions as needed
+                        console.log('OTP request success response:', response); // Log the response for debugging
+                        // Parse the response if it is a JSON string
+                        try {
+                            response = JSON.parse(response.data);
+                        } catch (e) {
+                            console.error('Failed to parse response:', e);
+                        }
+                        if (response.status_cd === "1") {
+                            $('#otp-request-fields').show(); // Show OTP input field
+                            $('#request-otp-btn').prop('disabled', true); // Disable the "Request OTP" button
+                            $('#verify-otp-footer').show(); // Show the "Verify OTP" button
+                        } else {
+                            // Handle error response
+                            alert(response.status_desc || 'OTP request failed.');
+                        }
                     },
                     error: function(xhr, status, error) {
                         // Handle error response
-                        console.error(error);
-                        // Optionally display an error message to the user
+                        console.error('OTP request error:', error);
+                        alert('An error occurred while requesting OTP.');
                     }
                 });
             });
+    
+            $('#verify-otp-btn').click(function(event) {
+                event.preventDefault(); // Prevent default form submission
+    
+                var otp = $('#otpInput').val();
+                $.ajax({
+                    url: '{{ route('gstr1.connectToGST.otpVerify') }}',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        otp: otp
+                    },
+                    success: function(response) {
+                        console.log('OTP verify success response:', response); // Log the response for debugging
+                        alert('OTP verified successfully.');
+                        // Optionally redirect or perform other actions as needed
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle error response
+                        console.error('OTP verify error:', error);
+                        alert('An error occurred while verifying OTP.');
+                    }
+                });
+            });
+    
             $('#company').change(function() {
                 var companyId = $(this).val();
                 if (companyId) {
@@ -119,16 +161,22 @@
                             company_id: companyId
                         },
                         success: function(data) {
+                            console.log('Company details success response:', data); // Log the response for debugging
                             if (data.success) {
                                 // Display company details
                                 var detailsHtml = '<p><strong>GST Number:</strong> ' + data.gst_no + '</p>' +
                                     '<p><strong>GST Username:</strong> ' + data.gst_username + '</p>' +
                                     '<p><strong>State:</strong> ' + data.state + '</p>' +
                                     '<p><strong>Token ID:</strong> ' + data.token_id + '-' + companyId + '</p>';
-
+    
                                 $('#companyDetails').html(detailsHtml).show();
                                 $('#request-otp-btn').prop('disabled', false);
                             }
+                        },
+                        error: function(xhr, status, error) {
+                            // Handle error response
+                            console.error('Company details error:', error);
+                            alert('An error occurred while fetching company details.');
                         }
                     });
                 } else {

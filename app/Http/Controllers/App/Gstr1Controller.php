@@ -34,21 +34,54 @@ class Gstr1Controller extends Controller
             'gst_username' => 'aagfi0474g1',
             'state_cd' => '27',
             'ip_address' => '$this->IP_ADDRESS',
-            'txn' => 'e0067f9c60024100a72ba3d60e7d9efa',
+            'txn' => '473675e563cf441d83c8e1720a8f8972',
             'retperiod' => '012024',
-    
         ];
         $response = $this->doRequest('gstr1',['query' => $params,'headers' => $headers]);
         $data = $response->getBody()->getContents();
-        //return $data;
-    
         $jsonData = json_decode($data, true);
-        //dd( $jsonData);
-        //***gstAuth Data***
+        // Add the transaction ID to the JSON data
+        $txnId = $jsonData['header']['txn'] ?? null;
+        $jsonData['txnId'] = $txnId;
+    // Log the value of $txnId
+Log::info('Transaction ID: '.$txnId);
 
+        //***gstAuth Data***
+    
         $companies = Company::get();
-        return $dataTable->render('app.gstr1.index', compact('companies','jsonData'));
+        return $dataTable->render('app.gstr1.index', compact('companies', 'jsonData', 'txnId'));
+
     }
+    
+
+    // public function index(Request $request, SalesInvoiceDataTable $dataTable)
+    // {
+    //     //***gstAuth Data***
+    //     $params = [
+    //         'gstin' => '27AAGFI0474G1ZG',
+    //         'retperiod' => '012024',
+    //         'email' => 'irriion@gmail.com',
+    //         'smrytyp' => 'L',
+    //     ];
+    //     $headers = [
+    //         'gst_username' => 'aagfi0474g1',
+    //         'state_cd' => '27',
+    //         'ip_address' => '$this->IP_ADDRESS',
+    //         'txn' => 'e0067f9c60024100a72ba3d60e7d9efa',
+    //         'retperiod' => '012024',
+    
+    //     ];
+    //     $response = $this->doRequest('gstr1',['query' => $params,'headers' => $headers]);
+    //     $data = $response->getBody()->getContents();
+    //     //return $data;
+    
+    //     $jsonData = json_decode($data, true);
+    //     //dd( $jsonData);
+    //     //***gstAuth Data***
+
+    //     $companies = Company::get();
+    //     return $dataTable->render('app.gstr1.index', compact('companies','jsonData'));
+    // }
 
     public function b2bData(Request $request, B2BDataTable $dataTable)
     {
@@ -103,7 +136,8 @@ class Gstr1Controller extends Controller
 
         return response()->json([
             'success' => true,
-            'email' => $company->email,
+            // 'email' => $company->email,
+            'email' =>'irriion@gmail.com',
             'gst_no' => $company->gst_no,
             'gst_username' => $company->gst_user_name,
             'state' => $company->state,
@@ -124,7 +158,8 @@ class Gstr1Controller extends Controller
         ]);
     }
 
-    public function otpRequest($args = []){
+    public function otpRequest(Request $request, $args = [])
+    {
         //dd($args);
         $params = ['email' => 'irriion@gmail.com'];
         $headers = [
@@ -132,25 +167,154 @@ class Gstr1Controller extends Controller
             'state_cd' => '27',
             'ip_address' => $this->IP_ADDRESS,
         ];
-
-        $response = $this->doRequest('authentication/otprequest',['query' => $params,'headers' => $headers]);
+    
+        $response = $this->doRequest('authentication/otprequest', ['query' => $params, 'headers' => $headers]);
         $data = $response->getBody()->getContents();
-        // return $data;
+        //return $data;
+        return response()->json(['message' => 'OTP requested successfully', 'data' => $data]);
     }
+    
+    // public function otpVerify(Request $request)
+    // {
+    //     $otp = $request->input('otp');
+    //     $params = ['email' => 'irriion@gmail.com', 'otp' => $otp];
+    //     $headers = [
+    //         'gst_username' => 'aagfi0474g1',
+    //         'state_cd' => '27',
+    //         'ip_address' => $this->IP_ADDRESS,
+    //         // 'txn' => $args['txn'],
+    //     ];
+    //     $response = $this->doRequest('authentication/authtoken', ['query' => $params, 'headers' => $headers]);
+    //     $data = $response->getBody()->getContents();
 
-    public function otpVerify(Request $request){
+    //     return response()->json(['message' => 'OTP verified successfully', 'data' => $data]);
+    // }
+
+    public function otpVerify(Request $request, $args = [])
+    {
         $otp = $request->input('otp');
-        $params = ['email' => 'irriion@gmail.com','otp' => $otp ];
+        $params = ['email' => 'irriion@gmail.com', 'otp' => $otp];
         $headers = [
             'gst_username' => 'aagfi0474g1',
             'state_cd' => '27',
             'ip_address' => $this->IP_ADDRESS,
-            //'txn' => $args['txn'],
+            'txn' => isset($args['txn']) ? $args['txn'] : null,
         ];
-        $response = $this->doRequest('authentication/authtoken',['query' => $params,'headers' => $headers]);
+        $response = $this->doRequest('authentication/authtoken', ['query' => $params, 'headers' => $headers]);
         $data = $response->getBody()->getContents();
-        return $data;
+        $jsonData = json_decode($data, true);
+    
+        if(isset($jsonData['header']['txn']) && !empty($jsonData['header']['txn'])) {
+            // Transaction ID found
+            $txnId = $jsonData['header']['txn'];
+            // Log the transaction ID
+            Log::info('Transaction ID: ' . $txnId);
+    
+            // Pass the transaction ID to the view along with other data
+            $companies = Company::get();
+            return $dataTable->render('app.gstr1.index', compact('companies', 'jsonData', 'txnId'));
+        } else {
+            // Transaction ID not found or empty
+            Log::error('Transaction ID not found in response: ' . json_encode($jsonData));
+            return response()->json(['error' => 'Transaction ID not found in response'], 500);
+        }
     }
+    
+
+
+    // public function otpVerify(Request $request, SalesInvoiceDataTable $dataTable)
+    // {
+    //     $otp = $request->input('otp');
+    //     $params = ['email' => 'irriion@gmail.com', 'otp' => $otp];
+    //     $headers = [
+    //         'gst_username' => 'aagfi0474g1',
+    //         'state_cd' => '27',
+    //         'ip_address' => $this->IP_ADDRESS,
+    //     ];
+
+    //     try {
+    //         $response = $this->doRequest('authentication/authtoken', ['query' => $params, 'headers' => $headers]);
+    //         $data = $response->getBody()->getContents();
+    //         $jsonData = json_decode($data, true);
+
+    //         // Check if the response indicates a successful authentication
+    //         if (isset($jsonData['status_cd']) && $jsonData['status_cd'] === '1') {
+    //             // Check if the transaction ID is present in the response
+    //             if (isset($jsonData['header']['txn'])) {
+    //                 // Extract the transaction ID from the response
+    //                 $txnId = $jsonData['header']['txn'];
+    //                 // Log the transaction ID
+    //                 Log::info('Transaction ID: ' . $txnId);
+
+    //                 // Pass the transaction ID to the view along with other data
+    //                 $companies = Company::get();
+    //                 return $dataTable->render('app.gstr1.index', compact('companies', 'jsonData', 'txnId'));
+    //             } else {
+    //                 // Log an error if the transaction ID is not found in the response
+    //                 Log::error('Transaction ID not found in response: ' . json_encode($jsonData));
+    //                 return response()->json(['error' => 'Transaction ID not found in response'], 500);
+    //             }
+    //         } else {
+    //             // Log an error if the authentication is not successful
+    //             Log::error('Authentication failed: ' . json_encode($jsonData));
+    //             return response()->json(['error' => 'Authentication failed'], 500);
+    //         }
+    //     } catch (GuzzleException $e) {
+    //         // Handle Guzzle exceptions
+    //         Log::error('GST API Guzzle Exception ERROR : ' . $e->getMessage());
+    //         return response()->json(['error' => 'Failed to verify OTP.'], 500);
+    //     } catch (\Exception $e) {
+    //         // Handle other exceptions
+    //         Log::error('Error during OTP verification: ' . $e->getMessage());
+    //         return response()->json(['error' => 'Failed to verify OTP.'], 500);
+    //     }
+    // }
+
+    
+    
+    
+    
+    
+    
+
+    // public function otpVerify(Request $request){
+    //     $otp = $request->input('otp');
+    //     $params = ['email' => 'irriion@gmail.com','otp' => $otp ];
+    //     $headers = [
+    //         'gst_username' => 'aagfi0474g1',
+    //         'state_cd' => '27',
+    //         'ip_address' => $this->IP_ADDRESS,
+    //         //'txn' => $args['txn'],
+    //     ];
+    //     $response = $this->doRequest('authentication/authtoken',['query' => $params,'headers' => $headers]);
+    //     $data = $response->getBody()->getContents();
+    //     $jsonData = json_decode($data, true);
+
+    //     $txnId = $jsonData['header']['txn'] ?? null;
+    //     return $data;
+    // }
+
+    // public function otpVerify(Request $request)
+    // {
+    //     $otp = $request->input('otp');
+    //     $params = ['email' => 'irriion@gmail.com','otp' => $otp ];
+    //     $headers = [
+    //         'gst_username' => 'aagfi0474g1',
+    //         'state_cd' => '27',
+    //         'ip_address' => $this->IP_ADDRESS,
+    //     ];
+    //     $response = $this->doRequest('authentication/authtoken',['query' => $params,'headers' => $headers]);
+    //     $data = $response->getBody()->getContents();
+    //     $jsonData = json_decode($data, true);
+        
+    //     // Extract the transaction ID from the response
+    //     $txnId = $jsonData['header']['txn'] ?? null;
+    
+    //     // Pass the transaction ID to the view
+    //     return view('app.gstr1.index', ['txnId' => $txnId]);
+    // }
+    
+
 
     private function doRequest(
         string $uriEndpoint,
