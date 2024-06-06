@@ -229,6 +229,7 @@ class SalesInvoiceDataTable extends DataTable
                 'buttons'   => [
                 ],
                 "scrollX" => true,
+                "paging" => false,
                 "drawCallback" => 'function( settings ) {
                 var tooltipTriggerList = [].slice.call(
                     document.querySelectorAll("[data-bs-toggle=tooltip]")

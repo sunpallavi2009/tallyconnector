@@ -9,10 +9,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\App\Gstr1Controller;
 use App\Http\Controllers\TenantHomeController;
 use App\Http\Controllers\App\CompanyController;
-use App\Http\Controllers\App\JsonImportController;
+use App\Http\Controllers\App\GstAuthController;
 use App\Http\Controllers\App\DebitNoteController;
-use App\Http\Controllers\App\ExcelImportController;
 use App\Http\Controllers\App\CreditNoteController;
+use App\Http\Controllers\App\JsonImportController;
+use App\Http\Controllers\App\ExcelImportController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use Laravel\Jetstream\Http\Controllers\CurrentTeamController;
@@ -136,10 +137,11 @@ Route::middleware([
         Route::get('gstr1/exp/show', [Gstr1Controller::class, 'expData'])->name('gstr1.exp');
         Route::get('gstr1/nil/show', [Gstr1Controller::class, 'nilData'])->name('gstr1.nil');
 
-        
+        Route::get('gstAuthData', [Gstr1Controller::class, 'gstAuthData'])->name('gstAuthData');
         Route::post('gstr1/connectToGST/getData', [Gstr1Controller::class, 'connectToGSTgetData'])->name('gstr1.connectToGST.getData');
         Route::post('gstr1/connectToGST/otpRequest', [Gstr1Controller::class, 'otpRequest'])->name('gstr1.connectToGST.otpRequest');
         Route::post('gstr1/connectToGST/otpVerify', [Gstr1Controller::class, 'otpVerify'])->name('gstr1.connectToGST.otpVerify');
+
 
         //note
         Route::resource('credit-note', CreditNoteController::class);
@@ -151,6 +153,11 @@ Route::middleware([
         Route::get('debit-note/data/show', [DebitNoteController::class, 'debitNoteShow'])->name('debit-note.show');
         Route::delete('debit-note/destroy/{id}', [DebitNoteController::class,'debitNoteDestroy'])->name('debit-note.destroy');
         
+
+        Route::resource('gstAuth', GstAuthController::class);
+        Route::post('gstAuth/connectToGST/getData', [GstAuthController::class, 'connectToGSTgetData'])->name('gstAuth.connectToGST.getData');
+        Route::post('gstAuth/connectToGST/otpRequest', [GstAuthController::class, 'otpRequest'])->name('gstAuth.connectToGST.otpRequest');
+        Route::post('gstAuth/connectToGST/otpVerify', [GstAuthController::class, 'otpVerify'])->name('gstAuth.connectToGST.otpVerify');
 
         //  JET STREAM
         require __DIR__ . '/jetstream.php';

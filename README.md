@@ -37,7 +37,6 @@ After removing the .trash directory, it will be permanently deleted from your se
 rm -rf /home/preciseca/.trash
 rm -rf /home/preciseca/public_html/laraveltenanttallyconnector/.git
 
-
 api through import
 Step 1: Set Up Tenant Middleware
 php

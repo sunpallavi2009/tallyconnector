@@ -104,6 +104,9 @@
                                     class="dash-mtext">{{ __('GSTR1') }}</span><span class="dash-arrow"><i
                                         data-feather="chevron-right"></i></span></a>
                             <ul class="dash-submenu">
+                                    <li class="dash-item {{ request()->is('gstAuth*') ? 'active' : '' }}">
+                                        <a class="dash-link" href="{{ route('gstAuth.index') }}">{{ __('GST Auth') }}</a>
+                                    </li>
                                     <li class="dash-item {{ request()->is('gstr1*') ? 'active' : '' }}">
                                         <a class="dash-link" href="{{ route('gstr1.index') }}">{{ __('GSTR1') }}</a>
                                     </li>
