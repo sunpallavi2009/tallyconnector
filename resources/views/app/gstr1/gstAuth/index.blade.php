@@ -17,7 +17,7 @@
             @foreach ($jsonData['data']['sec_sum'] as $row)
                 @if(isset($row['sec_nm']) && ($row['sec_nm'] === 'B2B' || $row['sec_nm'] === 'B2CS' || $row['sec_nm'] === 'CDNR' || $row['sec_nm'] === 'NIL' || $row['sec_nm'] === 'CDNUR' || $row['sec_nm'] === 'B2CL' || $row['sec_nm'] === 'EXP'  ))
                     <tr>
-                        <td><a href="">{{ $row['sec_nm'] }}</a></td>
+                        <td><a href="{{ route('gstAuth.'.$row['sec_nm']) }}">{{ $row['sec_nm'] }}</a></td>
                         <td>{{ $row['ttl_rec'] }}</td>
                         <td>{{ $row['ttl_val'] ?? '' }}</td>
                         <td>{{ $row['ttl_igst'] ?? '' }}</td>

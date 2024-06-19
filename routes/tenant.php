@@ -159,6 +159,9 @@ Route::middleware([
         Route::post('gstAuth/connectToGST/otpRequest', [GstAuthController::class, 'otpRequest'])->name('gstAuth.connectToGST.otpRequest');
         Route::post('gstAuth/connectToGST/otpVerify', [GstAuthController::class, 'otpVerify'])->name('gstAuth.connectToGST.otpVerify');
 
+        Route::get('gstAuth/b2b', [Gstr1Controller::class, 'gstAuthb2bData'])->name('gstAuth.B2B');
+
+
         //  JET STREAM
         require __DIR__ . '/jetstream.php';
     });
